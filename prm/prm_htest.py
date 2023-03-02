@@ -166,7 +166,6 @@ p2 = simulate(time, p2, dt, tau, r_o)
 p2_gpp = calc_spectral(p2.R, fs, time, p2.labels, 'gamma', 'power', plot_Fig=True, plot_Filter=True)["pyr"]
 print(dps_gpp, p2_gpp, (p2_gpp/dps_gpp)*100)
 
-plt.figure()
 plot_trace(time, p2.R, p2.labels)
 # #
 # p2.set_connections(new_conns)
