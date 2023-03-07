@@ -4,22 +4,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_1d(cell, max_in, n_pts=40, ref=None):
+def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default"):
+    new_conns = conns.copy()
+    new_I = I.copy()
     if ref is None:
         ylabel = "Log Power Ratio"
-        save_name = f"./figures/1d_metric3/inputs_to_{cell}_cell_raw.png"
+        save_name = f"inputs_to_{cell}_cell_raw.png"
         ylim = (-1, 3)
 
     else:
         ylabel = "%$\Delta$ Log Power Ratio"
-        save_name = f"./figures/1d_metric3/inputs_to_{cell}_cell.png"
+        save_name = f"inputs_to_{cell}_cell.png"
         ylim = (-60, 150)
 
 
     plt.figure(figsize=[9, 3])
 
     for i in range(max_in):
-        P = PRM_v2()
+        P = PRM_v2(new_conns, new_I)
         x_vec = np.linspace(0.5, 1.5, num_pts)
 
         log_power_ratio = np.zeros((max_in, n_pts))
@@ -81,7 +83,7 @@ def plot_1d(cell, max_in, n_pts=40, ref=None):
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    plt.savefig(save_name)
+    plt.savefig(f"./figures/1d_metric3/ref_set_2/{save_name}")
 
 
 # ===============================================================
@@ -99,7 +101,17 @@ r_o = 30
 
 c_list = ["pyr", "bic", "pv", "cck"]
 # ===============================================================
-P_ref = PRM_v2()
+new_conns = {
+    'pyr': {'pyr': 0.06, 'bic': 0.08, 'pv': 0.02, 'cck': 0.0},
+    'bic': {'pyr': -0.03, 'bic': 0.0, 'pv': 0.0, 'cck': 0.0},
+    'pv': {'pyr': -0.08, 'bic': 0.0, 'pv': -0.11, 'cck': -0.075},
+    'cck': {'pyr': 0.0, 'bic': 0.0, 'pv': -0.15, 'cck': -0.075}
+}
+new_I = {
+    'pyr': 0.07, 'bic': -0.525, 'pv': 0.9, 'cck': 0.7
+}
+
+P_ref = PRM_v2(new_conns, new_I)
 P_ref.set_init_state(len(time))
 P_ref = simulate(time, P_ref, dt, tau, r_o)
 
@@ -110,11 +122,11 @@ ref_metric3 = np.log10(
 # ===============================================================
 
 # cell type to look at
-ctype = "bic"
+ctype = "cck"
 
-num_pts = 40  # number of points to plot
+num_pts = 41  # number of points to plot
 
 max_inputs = len(c_list) + 1
 
-plot_1d(ctype, max_inputs, ref=ref_metric3)
+plot_1d(ctype, max_inputs, num_pts, conns=new_conns, I=new_I)
 # plt.show()
