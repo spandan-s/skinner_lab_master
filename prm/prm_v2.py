@@ -31,6 +31,13 @@ class PRM_v2:
             "cck": 80
         }
 
+        self.r_o = {
+            "pyr": 30,
+            "bic": 30,
+            "pv": 30,
+            "cck": 30
+        }
+
     def set_connections(self, param_dict="default"):
         if param_dict == "default":
             self.conns = {
@@ -80,14 +87,24 @@ def f(u, beta=10, h=0):
     return 1 / (1 + np.exp(-beta * (u - h)))
 
 
-def simulate(time, P, dt=0.001, tau=5, r_o=30):
+def simulate(time, P, dt=0.001, tau=5,
+             stim=None):
+    if stim == None:
+        # set stim level for each cell type
+        stim = {
+            "pyr": np.zeros_like(time),
+            "bic": np.zeros_like(time),
+            "pv": np.zeros_like(time),
+            "cck": np.zeros_like(time)
+        }
+
     # euler_integrate
     for t in range(len(time) - 1):
         c_list = ["pyr", "bic", "pv", "cck"]
         for c1 in c_list:
             P.R[c1][t + 1] = P.R[c1][t] + dt * P.alpha[c1] * \
-                             (-P.R[c1][t] + r_o * f(
-                                 sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1])) + \
+                             (-P.R[c1][t] + P.r_o[c1] * f(
+                                 sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1] + stim[c1][t])) + \
                              np.sqrt(2 * P.alpha[c1] * P.D[c1] * dt) * np.random.normal(0, 1)
     return P
 
@@ -172,27 +189,8 @@ def plot_trace(time, R, labels):
     plt.ylabel('Activity')
     plt.legend()
 
-# # =============================================================
-# # Parameters
-# T = 2.0  # total time (units in sec)
-# dt = 0.001  # plotting and Euler timestep (parameters adjusted accordingly)
-# fs = 1/dt
-#
-# # FI curve
-# beta = 10
-# tau = 5
-# h = 0
-# r_o = 30
-# ===============================================================
-# new_prm = PRM_v2()
-#
-# time = np.arange(0, T, dt)
-#
-# new_prm.set_init_state(len(time))
-# new_prm = simulate(time, new_prm, dt, tau, r_o)
-#
-# plot_trace(time, new_prm.R, new_prm.labels)
-# dps_tpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'theta', 'power', plot_Fig=True)["pyr"]
-# dps_gpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'gamma', 'power', plot_Fig=True)["pyr"]
-#
-# plt.show()
+def add_stim(ctype_list, time, stim = {}):
+    for c in ctype_list.keys():
+        stim[c] = ctype_list[c]
+
+    return stim
