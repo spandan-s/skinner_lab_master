@@ -25,23 +25,29 @@ class PRM_v2:
 
     def _set_timescales(self):
         self.alpha = {
-            "pyr": 50,
-            "bic": 50,
+            "pyr": 40,
+            "bic": 80,
+            "pv": 80,
+            "cck": 40
+        }
+        self.r_o = {
+            "pyr": 40,
+            "bic": 100,
             "pv": 100,
-            "cck": 80
+            "cck": 60
         }
 
     def set_connections(self, param_dict="default"):
         if param_dict == "default":
             self.conns = {
                 "pyr": {
-                    "pyr": 0.03, "bic": 0.04, "pv": 0.02, "cck": 0.0
+                    "pyr": 0.05, "bic": 0.04, "pv": 0.02, "cck": 0.0
                 },
                 "bic": {
-                    "pyr": -0.03, "bic": 0.0, "pv": 0.0, "cck": 0.0
+                    "pyr": -0.02, "bic": 0.0, "pv": 0.0, "cck": 0.0
                 },
                 "pv": {
-                    "pyr": -0.04, "bic": 0.0, "pv": -0.055, "cck": -0.075
+                    "pyr": -0.03, "bic": 0.0, "pv": -0.055, "cck": -0.075
                 },
                 "cck": {
                     "pyr": 0.0, "bic": 0.0, "pv": -0.15, "cck": -0.15
@@ -59,10 +65,10 @@ class PRM_v2:
         }
         if param_dict == "default":
             self.I = {
-                "pyr": 0.07,
-                "bic": -1.05,
-                "pv": 0.45,
-                "cck": 0.7,
+                "pyr": 0.001,
+                "bic": -1.4,
+                "pv": 0.5,
+                "cck": 0.8,
             }
         else:
             self.I = param_dict
@@ -80,13 +86,13 @@ def f(u, beta=10, h=0):
     return 1 / (1 + np.exp(-beta * (u - h)))
 
 
-def simulate(time, P, dt=0.001, tau=5, r_o=30):
+def simulate(time, P, dt=0.001, tau=5):
     # euler_integrate
     for t in range(len(time) - 1):
         c_list = ["pyr", "bic", "pv", "cck"]
         for c1 in c_list:
             P.R[c1][t + 1] = P.R[c1][t] + dt * P.alpha[c1] * \
-                             (-P.R[c1][t] + r_o * f(
+                             (-P.R[c1][t] + P.r_o[c1] * f(
                                  sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1])) + \
                              np.sqrt(2 * P.alpha[c1] * P.D[c1] * dt) * np.random.normal(0, 1)
     return P
@@ -174,7 +180,7 @@ def plot_trace(time, R, labels):
 
 # # =============================================================
 # # Parameters
-# T = 2.0  # total time (units in sec)
+# T = 8.0  # total time (units in sec)
 # dt = 0.001  # plotting and Euler timestep (parameters adjusted accordingly)
 # fs = 1/dt
 #
@@ -189,7 +195,7 @@ def plot_trace(time, R, labels):
 # time = np.arange(0, T, dt)
 #
 # new_prm.set_init_state(len(time))
-# new_prm = simulate(time, new_prm, dt, tau, r_o)
+# new_prm = simulate(time, new_prm, dt, tau)
 #
 # plot_trace(time, new_prm.R, new_prm.labels)
 # dps_tpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'theta', 'power', plot_Fig=True)["pyr"]
