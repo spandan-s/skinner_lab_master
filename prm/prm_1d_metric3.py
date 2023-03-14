@@ -1,7 +1,65 @@
+from copy import deepcopy
+
 from prm_v2 import *
 
 import numpy as np
 import matplotlib.pyplot as plt
+
+def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default"):
+    new_conns = deepcopy(conns)
+    new_I = deepcopy(I)
+    if ref is None:
+        ylabel = "Log Power Ratio"
+        save_name = f"stim_to_{cell}_cell_raw.png"
+        ylim = (-1, 3)
+
+    else:
+        ylabel = "%$\Delta$ Log Power Ratio"
+        save_name = f"stim_to_{cell}_cell.png"
+        ylim = (-60, 150)
+
+    plt.figure(figsize=[9, 3])
+
+    P = PRM_v2(new_conns, new_I)
+    x_vec = np.linspace(-2, 2, num_pts)
+
+    Y = np.zeros(n_pts)
+    Y_pct = np.zeros_like(Y)
+
+    stim = {
+        "pyr": 0,
+        "bic": 0,
+        "pv": 0,
+        "cck": 0
+    }
+
+    for idx, val in enumerate(x_vec):
+        stim[cell] = val
+        P.set_init_state(len(time))
+        P = simulate(time, P, dt, tau, stim=stim)
+
+        Y[idx] = np.log10(
+            calc_spectral(P.R, fs, time, P.labels, 'theta', 'power')["pyr"] /
+            calc_spectral(P.R, fs, time, P.labels, 'gamma', 'power')["pyr"]
+        )
+
+    if ref is None:
+        plt.plot(x_vec, Y,
+                 ls='--', marker='.')
+
+    else:
+        Y_pct = Y / ref * 100
+        plt.plot(x_vec, Y_pct,
+                 ls='--', marker='.')
+
+    plt.ylabel(ylabel)
+    plt.xlabel("Stimulation")
+    plt.title(f"Stimulation to {ctype} cell".upper())
+    plt.ylim(ylim)
+    plt.grid()
+    # plt.legend()
+    plt.tight_layout()
+    plt.savefig(f"./figures/1d_metric3/new_ref_set/{save_name}")
 
 
 def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default"):
@@ -16,7 +74,6 @@ def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default"):
         ylabel = "%$\Delta$ Log Power Ratio"
         save_name = f"inputs_to_{cell}_cell.png"
         ylim = (-60, 150)
-
 
     plt.figure(figsize=[9, 3])
 
@@ -81,7 +138,7 @@ def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default"):
     plt.title(f"inputs to {ctype} cell".upper())
     plt.ylim(ylim)
     plt.grid()
-    plt.legend()
+    # plt.legend()
     plt.tight_layout()
     plt.savefig(f"./figures/1d_metric3/ref_set_2/{save_name}")
 
@@ -101,32 +158,32 @@ r_o = 30
 
 c_list = ["pyr", "bic", "pv", "cck"]
 # ===============================================================
-new_conns = {
-    'pyr': {'pyr': 0.06, 'bic': 0.08, 'pv': 0.02, 'cck': 0.0},
-    'bic': {'pyr': -0.03, 'bic': 0.0, 'pv': 0.0, 'cck': 0.0},
-    'pv': {'pyr': -0.08, 'bic': 0.0, 'pv': -0.11, 'cck': -0.075},
-    'cck': {'pyr': 0.0, 'bic': 0.0, 'pv': -0.15, 'cck': -0.075}
-}
-new_I = {
-    'pyr': 0.07, 'bic': -0.525, 'pv': 0.9, 'cck': 0.7
-}
-
-P_ref = PRM_v2(new_conns, new_I)
-P_ref.set_init_state(len(time))
-P_ref = simulate(time, P_ref, dt, tau, r_o)
-
-ref_metric3 = np.log10(
-    calc_spectral(P_ref.R, fs, time, P_ref.labels, 'theta', 'power')["pyr"] /
-    calc_spectral(P_ref.R, fs, time, P_ref.labels, 'gamma', 'power')["pyr"]
-)
+# new_conns = {
+#     'pyr': {'pyr': 0.06, 'bic': 0.08, 'pv': 0.02, 'cck': 0.0},
+#     'bic': {'pyr': -0.03, 'bic': 0.0, 'pv': 0.0, 'cck': 0.0},
+#     'pv': {'pyr': -0.08, 'bic': 0.0, 'pv': -0.11, 'cck': -0.075},
+#     'cck': {'pyr': 0.0, 'bic': 0.0, 'pv': -0.15, 'cck': -0.075}
+# }
+# new_I = {
+#     'pyr': 0.07, 'bic': -0.525, 'pv': 0.9, 'cck': 0.7
+# }
+#
+# P_ref = PRM_v2(new_conns, new_I)
+# P_ref.set_init_state(len(time))
+# P_ref = simulate(time, P_ref, dt, tau, r_o)
+#
+# ref_metric3 = np.log10(
+#     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'theta', 'power')["pyr"] /
+#     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'gamma', 'power')["pyr"]
+# )
 # ===============================================================
 
 # cell type to look at
-ctype = "cck"
+ctype = "pv"
 
-num_pts = 41  # number of points to plot
+num_pts = 100  # number of points to plot
 
 max_inputs = len(c_list) + 1
 
-plot_1d(ctype, max_inputs, num_pts, conns=new_conns, I=new_I)
-# plt.show()
+plot_stim(ctype, num_pts)
+plt.show()

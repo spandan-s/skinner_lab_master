@@ -169,7 +169,7 @@ c_list = ["pyr", "bic", "pv", "cck"]
 
 #
 #
-# hypothesis_test(new_conns, new_I, True)
+# print(hypothesis_test(plot=True))
 #
 # p2 = PRM_v2(new_conns, new_I)
 # p2.set_init_state(len(time))

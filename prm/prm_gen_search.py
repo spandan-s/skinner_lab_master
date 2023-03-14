@@ -8,33 +8,38 @@ from prm_htest import hypothesis_test
 
 rng = np.random.default_rng()
 
-def gen_search(ref_conns, max_iter=100):
+def gen_search(ref_conns, ref_is, max_iter=100):
     valid_conns = []
+    valid_is = []
     # start at a given point in the parameter space (let: reference parameter)
     #   iniitialise PRM with conns
     #   run a simulation and do spectral analysis
     #   perform hypothesis test (should be true if ref set)
-    hypothesis_test(ref_conns)
+    hypothesis_test(ref_conns, ref_is)
     #   append conns to set of valid conns
     valid_conns.append(ref_conns)
+    valid_is.append(ref_is)
 
-    for i in range(max_iter):
-        if i%(max_iter//10) == 0:
-            print(f"iteration {i}")
+    for j in range(max_iter):
+        if j%(max_iter//10) == 0:
+            print(f"iteration {j}")
         # loop through set of valid conns
-        for conn in valid_conns:
+        for idx, (conn, i) in enumerate(zip(valid_conns, valid_is)):
             #   for each VC, change one of the conns by a random value (within constraints)
-            new_conn = change_conns(conn)
+            new_conn, new_i = change_conns(conn, i)
             #   initialise PRM with new conns
             #   run simulation and do spectral analysis
             #   perform hypothesis test
-            conn_validity = hypothesis_test(new_conn)
+            conn_validity = hypothesis_test(new_conn, new_i)
             #       if true: add to set of valid conns
             if conn_validity:
-                if new_conn not in valid_conns:
+                if (new_conn not in valid_conns) and (new_i not in valid_is):
                     valid_conns.append(new_conn)
-                    with open("search_results.json", "w") as w:
+                    valid_is.append(new_i)
+                    with open("search_results_conn.json", "w") as w:
                         json.dump(valid_conns, w)
+                    with open("search_results_i.json", "w") as w:
+                        json.dump(valid_is, w)
                     print(f"{len(valid_conns)} valid configurations found")
 
     # run for either a set number of configurations OR till a certain number of valid configurations are found
@@ -93,7 +98,7 @@ ref_prm = PRM_v2()
 # new_conn = change_one_conn(ref_prm.conns)
 # print(new_conn)
 
-search_results = gen_search(ref_prm.conns)
+search_results = gen_search(ref_prm.conns, ref_prm.I)
 
 # with open("search_results.json", "w") as final:
 #     json.dump(search_results, final)

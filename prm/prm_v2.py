@@ -86,14 +86,21 @@ def f(u, beta=10, h=0):
     return 1 / (1 + np.exp(-beta * (u - h)))
 
 
-def simulate(time, P, dt=0.001, tau=5):
+def simulate(time, P, dt=0.001, tau=5, stim=None):
+    if stim == None:
+        stim = {
+            "pyr": 0,
+            "bic": 0,
+            "pv": 0,
+            "cck": 0
+        }
     # euler_integrate
     for t in range(len(time) - 1):
         c_list = ["pyr", "bic", "pv", "cck"]
         for c1 in c_list:
             P.R[c1][t + 1] = P.R[c1][t] + dt * P.alpha[c1] * \
                              (-P.R[c1][t] + P.r_o[c1] * f(
-                                 sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1])) + \
+                                 sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1] + stim[c1])) + \
                              np.sqrt(2 * P.alpha[c1] * P.D[c1] * dt) * np.random.normal(0, 1)
     return P
 
@@ -189,7 +196,7 @@ def plot_trace(time, R, labels):
 # tau = 5
 # h = 0
 # r_o = 30
-# ===============================================================
+# # ===============================================================
 # new_prm = PRM_v2()
 #
 # time = np.arange(0, T, dt)
