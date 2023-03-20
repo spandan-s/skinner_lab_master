@@ -33,12 +33,13 @@ def gen_search(ref_conns, ref_is, max_iter=100):
             conn_validity = hypothesis_test(new_conn, new_i)
             #       if true: add to set of valid conns
             if conn_validity:
-                if (new_conn not in valid_conns) and (new_i not in valid_is):
+                if (new_conn not in valid_conns):
+                # if (new_conn not in valid_conns) and (new_i not in valid_is):
                     valid_conns.append(new_conn)
                     valid_is.append(new_i)
-                    with open("search_results_conn.json", "w") as w:
+                    with open("search_results_conn_3.json", "w") as w:
                         json.dump(valid_conns, w)
-                    with open("search_results_i.json", "w") as w:
+                    with open("search_results_i_3.json", "w") as w:
                         json.dump(valid_is, w)
                     print(f"{len(valid_conns)} valid configurations found")
 
@@ -55,18 +56,18 @@ def change_conns(conns, I):
     while new_conns == conns:
         n_mutations = rng.poisson(2)
         for i in range(n_mutations):
-            if bool(rng.integers(0, 2)):
-                c1, c2 = c_list[nrng.integers(4)], c_list[nrng.integers(4)]
-                new_conns[c1][c2] *= np.linspace(0.5, 1.5, 10)[nrng.integers(10)]
-        else:
-            c1 = c_list[nrng.integers(4)]
-            i_constraints = {
-                "pyr": [0, 0.1],
-                "bic": [-2, -1],
-                "pv": [0.5, 1],
-                "cck": [0.25, 1]
-            }
-            new_I[c1] = nrng.uniform(*i_constraints[c1])
+            # if bool(rng.integers(0, 2)):
+            c1, c2 = c_list[nrng.integers(4)], c_list[nrng.integers(4)]
+            new_conns[c1][c2] *= np.linspace(0.5, 1.5, 10)[nrng.integers(10)]
+        # else:
+        #     c1 = c_list[nrng.integers(4)]
+        #     i_constraints = {
+        #         "pyr": [0, 0.1],
+        #         "bic": [-2, -1],
+        #         "pv": [0.5, 1],
+        #         "cck": [0.25, 1]
+        #     }
+        #     new_I[c1] = nrng.uniform(*i_constraints[c1])
 
         # print(new_conns == conns)
 

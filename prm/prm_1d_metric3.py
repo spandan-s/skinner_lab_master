@@ -5,13 +5,13 @@ from prm_v2 import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default"):
+def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default", exclude_invalid=True):
     new_conns = deepcopy(conns)
     new_I = deepcopy(I)
     if ref is None:
         ylabel = "Log Power Ratio"
         save_name = f"stim_to_{cell}_cell_raw.png"
-        ylim = (-1, 3)
+        ylim = (-2, 5)
 
     else:
         ylabel = "%$\Delta$ Log Power Ratio"
@@ -22,6 +22,14 @@ def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default"):
 
     P = PRM_v2(new_conns, new_I)
     x_vec = np.linspace(-2, 2, num_pts)
+
+    if exclude_invalid:
+        ref_prm = PRM_v2()
+        ref_prm.set_init_state(len(time))
+        ref_prm = simulate(time, ref_prm)
+
+        ref_tpp = calc_spectral(ref_prm.R, fs, time, 'theta', 'power')["pyr"]
+        ref_gpp = calc_spectral(ref_prm.R, fs, time, 'gamma', 'power')["pyr"]
 
     Y = np.zeros(n_pts)
     Y_pct = np.zeros_like(Y)
@@ -38,10 +46,16 @@ def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default"):
         P.set_init_state(len(time))
         P = simulate(time, P, dt, tau, stim=stim)
 
-        Y[idx] = np.log10(
-            calc_spectral(P.R, fs, time, P.labels, 'theta', 'power')["pyr"] /
-            calc_spectral(P.R, fs, time, P.labels, 'gamma', 'power')["pyr"]
-        )
+        if exclude_invalid:
+            tpp, gpp = valid_oscillation(P.R, fs, time, ref=[ref_tpp, ref_gpp])
+
+            Y[idx] = np.log10(tpp/gpp)
+
+        else:
+            Y[idx] = np.log10(
+                calc_spectral(P.R, fs, time, 'theta', 'power')["pyr"] /
+                calc_spectral(P.R, fs, time, 'gamma', 'power')["pyr"]
+            )
 
     if ref is None:
         plt.plot(x_vec, Y,
@@ -55,6 +69,7 @@ def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default"):
     plt.ylabel(ylabel)
     plt.xlabel("Stimulation")
     plt.title(f"Stimulation to {ctype} cell".upper())
+    plt.xlim(x_vec[0], x_vec[-1])
     plt.ylim(ylim)
     plt.grid()
     # plt.legend()
@@ -63,8 +78,8 @@ def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default"):
 
 
 def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default"):
-    new_conns = conns.copy()
-    new_I = I.copy()
+    new_conns = deepcopy(conns)
+    new_I = deepcopy(I)
     if ref is None:
         ylabel = "Log Power Ratio"
         save_name = f"inputs_to_{cell}_cell_raw.png"
@@ -145,7 +160,7 @@ def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default"):
 
 # ===============================================================
 # Parameters
-T = 2.0  # total time (units in sec)
+T = 8.0  # total time (units in sec)
 dt = 0.001  # plotting and Euler timestep (parameters adjusted accordingly)
 fs = 1 / dt
 time = np.arange(0, T, dt)
@@ -179,11 +194,11 @@ c_list = ["pyr", "bic", "pv", "cck"]
 # ===============================================================
 
 # cell type to look at
-ctype = "pv"
+ctype = "cck"
 
 num_pts = 100  # number of points to plot
 
 max_inputs = len(c_list) + 1
 
-plot_stim(ctype, num_pts)
+plot_stim(ctype, num_pts, exclude_invalid=False)
 plt.show()

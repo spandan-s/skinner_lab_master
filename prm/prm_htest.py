@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import numpy.random
 
 from prm_v2 import *
@@ -6,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-def hypothesis_test(conns="default", I="default", plot=False):
+def hypothesis_test(in_conns="default", in_I="default", plot=False):
     # ===============================================================
     new_prm = PRM_v2()
 
@@ -18,6 +20,9 @@ def hypothesis_test(conns="default", I="default", plot=False):
     dps_tpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'theta', 'power')["pyr"]
     dps_gpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'gamma', 'power')["pyr"]
     # =================================================================
+
+    conns = deepcopy(in_conns)
+    I = deepcopy(in_I)
 
     # Checking validity of parameter set
     test_prm = PRM_v2(conns, I)

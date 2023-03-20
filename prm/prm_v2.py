@@ -105,8 +105,8 @@ def simulate(time, P, dt=0.001, tau=5, stim=None):
     return P
 
 
-def calc_spectral(R, fs, time, labels,
-                  band='theta', mode='peak_freq', plot_Fig=False, plot_Filter=False):
+def calc_spectral(R, fs, time,
+                  band='theta', mode='peak_freq', plot_Fig=False, plot_Filter=False, labels=None):
     # choose which band of oscillations you want to filter
     if band == 'theta':
         cutoff = np.array([3, 15])
@@ -115,6 +115,14 @@ def calc_spectral(R, fs, time, labels,
         cutoff = np.array([15, 100])
 
     c_list = ["pyr", "bic", "pv", "cck"]
+
+    if labels == None:
+        labels = {
+            "pyr": "PYR",
+            "bic": "BiC",
+            "pv": "PV",
+            "cck": "CCK"
+        }
 
     R_filt = {
         "pyr": filter_lfp(R["pyr"], fs, cutoff),
@@ -185,6 +193,23 @@ def plot_trace(time, R, labels):
     plt.ylabel('Activity')
     plt.legend()
 
+def valid_oscillation(R, fs, time, ref=None):
+    if ref == None:
+        ref_prm = PRM_v2()
+        ref_prm.set_init_state(len(time))
+        ref_prm = simulate(time, ref_prm)
+        ref_tpp = calc_spectral(ref_prm.R, fs, time, 'theta', 'power')["pyr"]
+        ref_gpp = calc_spectral(ref_prm.R, fs, time, 'gamma', 'power')["pyr"]
+        ref = [ref_tpp, ref_gpp]
+
+    tpp = calc_spectral(R, fs, time, 'theta', 'power')["pyr"]
+    gpp = calc_spectral(R, fs, time, 'gamma', 'power')["pyr"]
+
+    if (tpp >= (0.35 * ref[0])) and (gpp >= (0.35*ref[1])):
+        return [tpp, gpp]
+    else:
+        return [np.nan, np.nan]
+
 # # =============================================================
 # # Parameters
 # T = 8.0  # total time (units in sec)
@@ -195,7 +220,7 @@ def plot_trace(time, R, labels):
 # beta = 10
 # tau = 5
 # h = 0
-# r_o = 30
+# # r_o = 30
 # # ===============================================================
 # new_prm = PRM_v2()
 #
@@ -207,5 +232,7 @@ def plot_trace(time, R, labels):
 # plot_trace(time, new_prm.R, new_prm.labels)
 # dps_tpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'theta', 'power', plot_Fig=True)["pyr"]
 # dps_gpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'gamma', 'power', plot_Fig=True)["pyr"]
+#
+# print(dps_tpp, dps_gpp)
 #
 # plt.show()
