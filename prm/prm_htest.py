@@ -17,8 +17,8 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
     new_prm.set_init_state(len(time))
     new_prm = simulate(time, new_prm, dt, tau)
     # =================================================================
-    dps_tpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'theta', 'power')["pyr"]
-    dps_gpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'gamma', 'power')["pyr"]
+    dps_tpp = calc_spectral(new_prm.R, fs, time, 'theta', 'power')["pyr"]
+    dps_gpp = calc_spectral(new_prm.R, fs, time, 'gamma', 'power')["pyr"]
     # =================================================================
 
     conns = deepcopy(in_conns)
@@ -39,8 +39,8 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
     #   Has gamma power >= 25% of DPS
     # print("Checking primary hypothesis")
     pH0 = np.zeros(2)
-    pH0[0] = calc_spectral(test_prm.R, fs, time, test_prm.labels, 'theta', 'power')["pyr"]
-    pH0[1] = calc_spectral(test_prm.R, fs, time, test_prm.labels, 'gamma', 'power')["pyr"]
+    pH0[0] = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
+    pH0[1] = calc_spectral(test_prm.R, fs, time, 'gamma', 'power')["pyr"]
     if (pH0[0] >= (0.4 * dps_tpp)) and (pH0[1] >= (0.4 * dps_gpp)):
         h_test[0] = True
 
@@ -50,7 +50,7 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
         test_prm.conns["pyr"]["pyr"] = 0
         test_prm.set_init_state(len(time))
         test_prm = simulate(time, test_prm, dt, tau)
-        pH1 = calc_spectral(test_prm.R, fs, time, test_prm.labels, 'theta', 'power')["pyr"]
+        pH1 = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
         if pH1 <= 0.15 * dps_tpp:
             h_test[1] = True
 
@@ -61,7 +61,7 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
             test_prm.conns["cck"]["pv"] = 0
             test_prm.set_init_state(len(time))
             test_prm = simulate(time, test_prm, dt, tau)
-            pH2 = calc_spectral(test_prm.R, fs, time, test_prm.labels, 'theta', 'power')["pyr"]
+            pH2 = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
             if pH2 <= 0.15 * dps_tpp:
                 h_test[2] = True
 
@@ -72,7 +72,7 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                 test_prm.conns["pv"]["pyr"] = 0
                 test_prm.set_init_state(len(time))
                 test_prm = simulate(time, test_prm, dt, tau)
-                pH3 = calc_spectral(test_prm.R, fs, time, test_prm.labels, 'theta', 'power')["pyr"]
+                pH3 = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
                 if pH3 <= 0.15 * dps_tpp:
                     h_test[3] = True
 
@@ -83,7 +83,7 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                     test_prm.conns["bic"]["pyr"] = 0
                     test_prm.set_init_state(len(time))
                     test_prm = simulate(time, test_prm, dt, tau)
-                    pH4 = calc_spectral(test_prm.R, fs, time, test_prm.labels, 'theta', 'power')["pyr"]
+                    pH4 = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
                     if pH4 <= 0.15 * dps_tpp:
                         h_test[4] = True
                     else:

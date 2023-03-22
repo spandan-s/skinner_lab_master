@@ -205,7 +205,7 @@ def valid_oscillation(R, fs, time, ref=None):
     tpp = calc_spectral(R, fs, time, 'theta', 'power')["pyr"]
     gpp = calc_spectral(R, fs, time, 'gamma', 'power')["pyr"]
 
-    if (tpp >= (0.35 * ref[0])) and (gpp >= (0.35*ref[1])):
+    if (tpp >= (0.20 * ref[0])) and (gpp >= (0.2*ref[1])):
         return [tpp, gpp]
     else:
         return [np.nan, np.nan]

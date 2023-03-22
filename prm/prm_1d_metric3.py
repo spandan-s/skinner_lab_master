@@ -10,8 +10,8 @@ def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default", exclude_in
     new_I = deepcopy(I)
     if ref is None:
         ylabel = "Log Power Ratio"
-        save_name = f"stim_to_{cell}_cell_raw.png"
-        ylim = (-2, 5)
+        save_name = f"stim_to_{cell}_cell_exc.png"
+        ylim = (-1, 3)
 
     else:
         ylabel = "%$\Delta$ Log Power Ratio"
@@ -200,5 +200,5 @@ num_pts = 100  # number of points to plot
 
 max_inputs = len(c_list) + 1
 
-plot_stim(ctype, num_pts, exclude_invalid=False)
+plot_stim(ctype, num_pts, exclude_invalid=True)
 plt.show()
