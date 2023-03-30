@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
-
+from prm_v2 import *
 from prm_htest import hypothesis_test
 
 def l2_ref(conns, ref_conns):
@@ -17,7 +17,7 @@ def l2_ref(conns, ref_conns):
 
     return np.linalg.norm(v1-v2)
 
-with open("search_results/search_results_conn_4.json", "r") as f:
+with open("search_results/search_results_conn_6.json", "r") as f:
     conn_data = json.load(f)
 
 # with open("search_results/search_results_i_4.json", "r") as f:
@@ -42,26 +42,37 @@ c_list = {"pyr", "bic", "pv", "cck"}
 true_count, false_count = 0, 0
 
 # for idx, conn in tqdm(enumerate(conn_data)):
-#     # for c in c_list:
-#         # conn[c]["pyr"] = ref_conns[c]["pyr"]
 #     if hypothesis_test(conn):
 #         true_count += 1
 #         # print(conn, i)
 #     else:
 #         false_count += 1
+# harmonic = np.zeros(len(conn_data), dtype=bool)
+# freq_arr = np.zeros((2, len(conn_data)))
 #
-# print(f"True: {true_count}; False: {false_count}")
+# for idx, conn in tqdm(enumerate(conn_data)):
+#     [tf, _], [gf, _] = test_prm(conn)
+#     freq_arr[:, idx] = tf, gf
+
+# print(f"True: {sum(harmonic)}; False: {len(harmonic)-sum(harmonic)}")
+# plt.scatter(freq_arr[0], freq_arr[1])
 
 # test_list = [4, 14, 27, 33]
 # test_list = [6, 15, 38, 79]
 # test_list = [1, 2, 12, 58]
-#
-print(hypothesis_test(conn_data[89], plot=True))
+# valid_ish = [34, 46, 62, 66, 115
+n = 32
+print(hypothesis_test(conn_data[n], plot=True))
 
+# print(test_prm())
+print(run_prm(conn_data[n]))
+
+#
 # l2_list = np.zeros(len(conn_data))
 #
 # for idx, conn in enumerate(conn_data):
 #     l2_list[idx] = l2_ref(conn, ref_conns)
 #
 # plt.plot(l2_list, 'o')
+plt.tight_layout()
 plt.show()

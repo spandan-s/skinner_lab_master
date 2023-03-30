@@ -1,3 +1,4 @@
+import json
 from copy import deepcopy
 
 from prm_v2 import *
@@ -74,7 +75,7 @@ def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default", exclude_in
     plt.grid()
     # plt.legend()
     plt.tight_layout()
-    plt.savefig(f"./figures/1d_metric3/new_ref_set/{save_name}")
+    # plt.savefig(f"./figures/1d_metric3/new_ref_set/{save_name}")
 
 
 def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default"):
@@ -173,6 +174,11 @@ r_o = 30
 
 c_list = ["pyr", "bic", "pv", "cck"]
 # ===============================================================
+with open("search_results/search_results_conn_6.json", "r") as f:
+    conn_data = json.load(f)
+
+new_conns = conn_data[26]
+
 # new_conns = {
 #     'pyr': {'pyr': 0.06, 'bic': 0.08, 'pv': 0.02, 'cck': 0.0},
 #     'bic': {'pyr': -0.03, 'bic': 0.0, 'pv': 0.0, 'cck': 0.0},
@@ -194,11 +200,11 @@ c_list = ["pyr", "bic", "pv", "cck"]
 # ===============================================================
 
 # cell type to look at
-ctype = "cck"
+ctype = "pv"
 
 num_pts = 100  # number of points to plot
 
 max_inputs = len(c_list) + 1
 
-plot_stim(ctype, num_pts, exclude_invalid=True)
+plot_stim(ctype, num_pts, conns=new_conns, exclude_invalid=False)
 plt.show()

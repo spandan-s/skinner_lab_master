@@ -32,7 +32,16 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
     test_prm.set_init_state(len(time))
     test_prm = simulate(time, test_prm, dt, tau)
     if plot:
-        plot_trace(time, test_prm.R, test_prm.labels)
+        plot_layout = [
+            ["top"]*2,
+            ["midL", "midR"],
+            ["botL", "botR"]
+        ]
+
+        fig, ax = plt.subplot_mosaic(plot_layout)
+
+        ax["top"].plot(time[3 * len(time)//4:], test_prm.R["pyr"][3 * len(time)//4:])
+        ax["top"].set_title("Primary Hypothesis")
 
     # Check if it satisfies primary hypothesis
     #   Has theta power >= 50% of default parameter set (DPS)
@@ -41,7 +50,7 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
     pH0 = np.zeros(2)
     pH0[0] = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
     pH0[1] = calc_spectral(test_prm.R, fs, time, 'gamma', 'power')["pyr"]
-    if (pH0[0] >= (0.4 * dps_tpp)) and (pH0[1] >= (0.4 * dps_gpp)):
+    if (pH0[0] >= (0.6 * dps_tpp)) and (pH0[1] >= (0.6 * dps_gpp)):
         h_test[0] = True
 
         # Check if it satisfies secondary hypothesis #1 (removal of PYR->PYR connections)
@@ -50,6 +59,9 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
         test_prm.conns["pyr"]["pyr"] = 0
         test_prm.set_init_state(len(time))
         test_prm = simulate(time, test_prm, dt, tau)
+        if plot:
+            ax["midL"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
+            ax["midL"].set_title("Removed $PYR \\rightarrow PYR$ connections")
         pH1 = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
         if pH1 <= 0.15 * dps_tpp:
             h_test[1] = True
@@ -61,6 +73,10 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
             test_prm.conns["cck"]["pv"] = 0
             test_prm.set_init_state(len(time))
             test_prm = simulate(time, test_prm, dt, tau)
+            if plot:
+                ax["midR"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
+                ax["midR"].set_title("Removed $CCK \\rightarrow PV$ connections")
+
             pH2 = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
             if pH2 <= 0.15 * dps_tpp:
                 h_test[2] = True
@@ -72,6 +88,10 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                 test_prm.conns["pv"]["pyr"] = 0
                 test_prm.set_init_state(len(time))
                 test_prm = simulate(time, test_prm, dt, tau)
+                if plot:
+                    ax["botL"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
+                    ax["botL"].set_title("Removed $PV \\rightarrow PYR$ connections")
+
                 pH3 = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
                 if pH3 <= 0.15 * dps_tpp:
                     h_test[3] = True
@@ -83,6 +103,10 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                     test_prm.conns["bic"]["pyr"] = 0
                     test_prm.set_init_state(len(time))
                     test_prm = simulate(time, test_prm, dt, tau)
+                    if plot:
+                        ax["botR"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
+                        ax["botR"].set_title("Removed $BiC \\rightarrow PYR$ connections")
+
                     pH4 = calc_spectral(test_prm.R, fs, time, 'theta', 'power')["pyr"]
                     if pH4 <= 0.15 * dps_tpp:
                         h_test[4] = True
@@ -196,4 +220,5 @@ c_list = ["pyr", "bic", "pv", "cck"]
 # print(f"dps ttp: {dps_tpp}")
 # print(f"no_cck_pv_tpp: {new_tpp}")
 
+# plt.tight_layout()
 # plt.show()

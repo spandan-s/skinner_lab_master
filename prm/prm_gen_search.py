@@ -37,7 +37,7 @@ def gen_search(ref_conns, ref_is, max_iter=100):
                 # if (new_conn not in valid_conns) and (new_i not in valid_is):
                     valid_conns.append(new_conn)
                     valid_is.append(new_i)
-                    with open("search_results/search_results_conn_4.json", "w") as w:
+                    with open("search_results/search_results_conn_6.json", "w") as w:
                         json.dump(valid_conns, w)
                     # with open("search_results/search_results_i_4.json", "w") as w:
                     #     json.dump(valid_is, w)

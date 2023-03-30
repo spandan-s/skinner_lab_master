@@ -1,6 +1,8 @@
+from copy import deepcopy
+
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.signal import periodogram, find_peaks
+from scipy import signal
 from f_filter_lfp import filter_lfp
 
 
@@ -54,7 +56,7 @@ class PRM_v2:
                 },
             }
         else:
-            self.conns = param_dict
+            self.conns = deepcopy(param_dict)
 
     def _set_inputs(self, param_dict='default'):
         self.D = {
@@ -71,7 +73,7 @@ class PRM_v2:
                 "cck": 0.8,
             }
         else:
-            self.I = param_dict
+            self.I = deepcopy(param_dict)
 
     def set_init_state(self, n_samples):
         self.R = {
@@ -109,10 +111,10 @@ def calc_spectral(R, fs, time,
                   band='theta', mode='peak_freq', plot_Fig=False, plot_Filter=False, labels=None):
     # choose which band of oscillations you want to filter
     if band == 'theta':
-        cutoff = np.array([3, 15])
+        cutoff = np.array([3, 12])
     elif band == 'gamma':
         # should this be changed - maybe?
-        cutoff = np.array([15, 100])
+        cutoff = np.array([20, 100])
 
     c_list = ["pyr", "bic", "pv", "cck"]
 
@@ -137,11 +139,17 @@ def calc_spectral(R, fs, time,
         for c in c_list:
             plt.plot(time[plot_start_time:], R_filt[c][plot_start_time:], label=labels[c])
 
+    segment = int(fs * 4)
+    myhann = signal.get_window('hann', segment)
+
+    myparams = dict(fs=fs, nperseg=segment, window=myhann,
+                    noverlap=segment / 2, scaling='density', return_onesided=True)
+
     pgram = {
-        "pyr": periodogram(R_filt["pyr"], fs),
-        "bic": periodogram(R_filt["bic"], fs),
-        "pv": periodogram(R_filt["pv"], fs),
-        "cck": periodogram(R_filt["cck"], fs),
+        "pyr": signal.welch(R_filt["pyr"], **myparams),
+        "bic": signal.welch(R_filt["bic"], **myparams),
+        "pv": signal.welch(R_filt["pv"], **myparams),
+        "cck": signal.welch(R_filt["cck"], **myparams),
     }
     if plot_Fig:
         plt.figure(figsize=[13, 8])
@@ -156,10 +164,10 @@ def calc_spectral(R, fs, time,
         plt.legend()
 
     peaks = {
-        "pyr": find_peaks(pgram["pyr"][1])[0],
-        "bic": find_peaks(pgram["bic"][1])[0],
-        "pv": find_peaks(pgram["pv"][1])[0],
-        "cck": find_peaks(pgram["cck"][1])[0]
+        "pyr": signal.find_peaks(pgram["pyr"][1])[0],
+        "bic": signal.find_peaks(pgram["bic"][1])[0],
+        "pv": signal.find_peaks(pgram["pv"][1])[0],
+        "cck": signal.find_peaks(pgram["cck"][1])[0]
     }
 
     if mode == "peak_freq":
@@ -193,6 +201,7 @@ def plot_trace(time, R, labels):
     plt.ylabel('Activity')
     plt.legend()
 
+
 def valid_oscillation(R, fs, time, ref=None):
     if ref == None:
         ref_prm = PRM_v2()
@@ -205,10 +214,120 @@ def valid_oscillation(R, fs, time, ref=None):
     tpp = calc_spectral(R, fs, time, 'theta', 'power')["pyr"]
     gpp = calc_spectral(R, fs, time, 'gamma', 'power')["pyr"]
 
-    if (tpp >= (0.20 * ref[0])) and (gpp >= (0.2*ref[1])):
+    if (tpp >= (0.20 * ref[0])) and (gpp >= (0.2 * ref[1])):
         return [tpp, gpp]
     else:
         return [np.nan, np.nan]
+
+
+def run_prm(conns=None, I=None, dt=0.001, T=10.0):
+    if conns == None:
+        conns = "default"
+    if I == None:
+        I = "default"
+    fs = 1 / dt
+    new_prm = PRM_v2(conns, I)
+
+    time = np.arange(0, T, dt)
+
+    new_prm.set_init_state(len(time))
+    new_prm = simulate(time, new_prm)
+
+    plot_trace(time, new_prm.R, new_prm.labels)
+    tf = calc_spectral(new_prm.R, fs, time, 'theta', 'peak_freq', plot_Filter=False)["pyr"]
+    gf = calc_spectral(new_prm.R, fs, time, 'gamma', 'peak_freq', plot_Filter=False)["pyr"]
+    tpp = calc_spectral(new_prm.R, fs, time, 'theta', 'power', plot_Filter=False)["pyr"]
+    gpp = calc_spectral(new_prm.R, fs, time, 'gamma', 'power', plot_Filter=False)["pyr"]
+
+    return [tf, tpp], [gf, gpp]
+
+def add_to_plot(conns, label, pcolor=None):
+    v = []
+    for c in [*conns]:
+        v.append([*conns[c].values()])
+
+    v = np.array(v).reshape(16)
+
+
+
+def plot_conns(in_conns, in_ref_conns = None):
+    if in_ref_conns == None:
+        ref = PRM_v2()
+        ref_conns = deepcopy(ref.conns)
+    else:
+        ref_conns = deepcopy(in_ref_conns)
+
+    conns = deepcopy(in_conns)
+
+    v, v_ref = [], []
+    for c in [*conns]:
+        v.append([*conns[c].values()])
+        v_ref.append([*ref_conns[c].values()])
+
+    v = np.array(v).reshape(16)
+    v_ref = np.array(v_ref).reshape(16)
+
+    c_list = ["pyr", "bic", "pv", "cck"]
+
+    conn_labels = []
+    for c in c_list:
+        for c2 in c_list:
+            conn_labels.append(f"$w_{{{c.upper()} \\rightarrow {c2.upper()}}}$")
+
+    invalid = np.where(v_ref == 0)
+
+    v = np.delete(v, invalid)
+    v_ref = np.delete(v_ref, invalid)
+    v_ratio = v/v_ref
+
+    conn_labels = np.delete(conn_labels, invalid)
+
+    num_labels = len(conn_labels)
+
+    angles = np.linspace(0, 2 * np.pi, num_labels, endpoint=False)
+
+    # append the first value to the end of the array to create a closed loop
+    v_ratio = np.append(v_ratio, v_ratio[0])
+    v_ref = np.append(v_ref, v_ref[0])
+    angles = np.append(angles, angles[0])
+
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+
+    # Draw the outline of our data.
+    ax.plot(angles, v_ratio, linewidth=1)
+    ax.plot(angles, v_ref/v_ref, linewidth=1)
+    # Fill it in.
+    ax.fill(angles, v_ratio, alpha=0.25)
+    ax.fill(angles, v_ref/v_ref, alpha=0.25)
+
+    # line up first datapoint with vertical axis
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+
+    # clean up the labels so they don't overlap with the grid lines
+    ax.set_thetagrids(np.degrees(angles[:-1]), conn_labels)
+    for label, angle in zip(ax.get_xticklabels(), angles):
+        if angle in (0, np.pi):
+            label.set_horizontalalignment('center')
+        elif 0 < angle < np.pi:
+            label.set_horizontalalignment('left')
+        else:
+            label.set_horizontalalignment('right')
+
+    ax.set_ylim(0, 3)
+
+    ax.set_rlabel_position(180 / num_labels)
+    # Add some custom styling.
+    # Change the color of the tick labels.
+    ax.tick_params(colors='#222222')
+    # Make the y-axis (0-100) labels smaller.
+    ax.tick_params(axis='y', labelsize=8)
+    # Change the color of the circular gridlines.
+    ax.grid(color='#AAAAAA')
+    # Change the color of the outermost gridline (the spine).
+    ax.spines['polar'].set_color('#222222')
+    # Change the background color inside the circle itself.
+    ax.set_facecolor('#FAFAFA')
 
 # # =============================================================
 # # Parameters
