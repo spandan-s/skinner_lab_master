@@ -242,7 +242,7 @@ def valid_oscillation(R, fs, time, ref=None):
         return [np.nan, np.nan]
 
 
-def run_prm(conns=None, I=None, dt=0.001, T=10.0,
+def run_prm(conns=None, I=None, dt=0.001, T=8.0,
             stim=None, plot=False):
     if conns == None:
         conns = "default"
@@ -354,21 +354,37 @@ def plot_conns(in_conns, in_ref_conns = None):
     # Change the background color inside the circle itself.
     ax.set_facecolor('#FAFAFA')
 
-# # =============================================================
-# # Parameters
-# T = 8.0  # total time (units in sec)
-# dt = 0.001  # plotting and Euler timestep (parameters adjusted accordingly)
-# fs = 1/dt
-#
-# # FI curve
-# beta = 10
-# tau = 5
-# h = 0
-# # r_o = 30
-# # ===============================================================
+def ref_power():
+    ref_prm = PRM_v2()
+
+    temp_theta, temp_gamma = np.zeros(5), np.zeros(5)
+
+    for i in range(5):
+        ref_prm.set_init_state(len(time))
+        ref_prm = simulate(time, ref_prm)
+
+        temp_theta[i] = calc_spectral(ref_prm.R, fs, time, 'theta', 'power')["pyr"]
+        temp_gamma[i] = calc_spectral(ref_prm.R, fs, time, 'gamma', 'power')["pyr"]
+
+    ref_tpp = np.mean(temp_theta)
+    ref_gpp = np.mean(temp_gamma)
+    return ref_tpp, ref_gpp
+# =============================================================
+# Parameters
+T = 8.0  # total time (units in sec)
+dt = 0.001  # plotting and Euler timestep (parameters adjusted accordingly)
+fs = 1/dt
+time = np.arange(0, T, dt)
+
+# FI curve
+beta = 10
+tau = 5
+h = 0
+# r_o = 30
+# ===============================================================
 # new_prm = PRM_v2()
 #
-# time = np.arange(0, T, dt)
+
 #
 # new_prm.set_init_state(len(time))
 # new_prm = simulate(time, new_prm, dt, tau)
