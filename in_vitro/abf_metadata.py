@@ -71,8 +71,8 @@ os.chdir(dir)
 
 try:
     os.mkdir('metadata')
-except:
-    FileExistsError
+except FileExistsError:
+    pass
 
 for fn in sorted(i for i in os.listdir(dir) if i.endswith('.abf')):
     get_abf_metadata(fn)

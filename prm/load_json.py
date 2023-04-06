@@ -61,12 +61,21 @@ true_count, false_count = 0, 0
 # test_list = [6, 15, 38, 79]
 # test_list = [1, 2, 12, 58]
 # valid_ish = [34, 46, 62, 66, 115
-n = 32
-print(hypothesis_test(conn_data[n], plot=True))
+n = 26
+# print(hypothesis_test(conn_data[n], plot=True))
+stim = {
+    "pyr": 0.0,
+    "bic": 0.0,
+    "pv": 0.0,
+    "cck": 0.0
+}
+
 
 # print(test_prm())
-print(run_prm(conn_data[n]))
+# for i in range(10):
+#     print(run_prm(conn_data[n], stim=stim))
 
+print(run_prm(plot=True))
 #
 # l2_list = np.zeros(len(conn_data))
 #

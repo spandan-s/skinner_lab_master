@@ -108,7 +108,7 @@ def simulate(time, P, dt=0.001, tau=5, stim=None):
 
 
 def calc_spectral(R, fs, time,
-                  band='theta', mode='peak_freq', plot_Fig=False, plot_Filter=False, labels=None):
+                  band='theta', mode=None, plot_Fig=False, plot_Filter=False, labels=None):
     # choose which band of oscillations you want to filter
     if band == 'theta':
         cutoff = np.array([3, 12])
@@ -151,6 +151,13 @@ def calc_spectral(R, fs, time,
         "pv": signal.welch(R_filt["pv"], **myparams),
         "cck": signal.welch(R_filt["cck"], **myparams),
     }
+    # pgram = {
+    #     "pyr": signal.periodogram(R_filt["pyr"], fs),
+    #     "bic": signal.periodogram(R_filt["bic"], fs),
+    #     "pv": signal.periodogram(R_filt["pv"], fs),
+    #     "cck": signal.periodogram(R_filt["cck"], fs),
+    # }
+
     if plot_Fig:
         plt.figure(figsize=[13, 8])
         for c in c_list:
@@ -188,6 +195,21 @@ def calc_spectral(R, fs, time,
         }
         return power
 
+    else:
+        fm = {
+            "pyr": pgram["pyr"][0][peaks["pyr"]][np.argmax(pgram["pyr"][1][peaks["pyr"]])],
+            "bic": pgram["bic"][0][peaks["bic"]][np.argmax(pgram["bic"][1][peaks["bic"]])],
+            "pv": pgram["pv"][0][peaks["pv"]][np.argmax(pgram["pv"][1][peaks["pv"]])],
+            "cck": pgram["cck"][0][peaks["cck"]][np.argmax(pgram["cck"][1][peaks["cck"]])],
+        }
+        power = {
+            "pyr": np.max(pgram["pyr"][1][peaks["pyr"]]),
+            "bic": np.max(pgram["bic"][1][peaks["bic"]]),
+            "pv": np.max(pgram["pv"][1][peaks["pv"]]),
+            "cck": np.max(pgram["cck"][1][peaks["cck"]]),
+        }
+        return fm, power
+
 
 def plot_trace(time, R, labels):
     plot_start_time = 3 * time.size // 4
@@ -220,7 +242,8 @@ def valid_oscillation(R, fs, time, ref=None):
         return [np.nan, np.nan]
 
 
-def run_prm(conns=None, I=None, dt=0.001, T=10.0):
+def run_prm(conns=None, I=None, dt=0.001, T=10.0,
+            stim=None, plot=False):
     if conns == None:
         conns = "default"
     if I == None:
@@ -231,9 +254,11 @@ def run_prm(conns=None, I=None, dt=0.001, T=10.0):
     time = np.arange(0, T, dt)
 
     new_prm.set_init_state(len(time))
-    new_prm = simulate(time, new_prm)
+    new_prm = simulate(time, new_prm, stim=stim)
 
-    plot_trace(time, new_prm.R, new_prm.labels)
+    if plot:
+        plot_trace(time, new_prm.R, new_prm.labels)
+
     tf = calc_spectral(new_prm.R, fs, time, 'theta', 'peak_freq', plot_Filter=False)["pyr"]
     gf = calc_spectral(new_prm.R, fs, time, 'gamma', 'peak_freq', plot_Filter=False)["pyr"]
     tpp = calc_spectral(new_prm.R, fs, time, 'theta', 'power', plot_Filter=False)["pyr"]
