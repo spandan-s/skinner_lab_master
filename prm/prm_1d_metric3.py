@@ -1,4 +1,5 @@
 import json
+import os
 from copy import deepcopy
 
 from tqdm import tqdm
@@ -286,10 +287,10 @@ def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default",
 
             if ref is None:
                 plt.plot(x_vec, LPR,
-                           ls='--', marker='.', label=y_label)
+                         ls='--', marker='.', label=y_label)
                 if exclude_invalid:
                     plt.plot(x_vec, LPR_valid,
-                               ls='', marker='.', color='red')
+                             ls='', marker='.', color='red')
 
             else:
                 LPR_ratio = LPR / ref * 100
@@ -307,7 +308,8 @@ def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default",
 
 
 def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
-                          plot_lpr=True, exclude_invalid=True, sdir=""):
+                     stim_range=(-2, 2),
+                     plot_lpr=True, exclude_invalid=True, sdir=""):
     new_conns = deepcopy(conns)
     new_I = deepcopy(I)
 
@@ -323,7 +325,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
     else:
         fig, ax = plt.subplots(figsize=[9, 3], dpi=250)
 
-    x_vec = np.linspace(-2, 2, num_pts)
+    x_vec = np.linspace(stim_range[0], stim_range[1], num_pts)
 
     theta = np.zeros(n_pts)
     gamma = np.zeros(n_pts)
@@ -406,6 +408,111 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
     plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
 
 
+def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
+                           conns=None, I=None,
+                           conn_range=[0.5, 1.5], plot_lpr=True, exclude_invalid=True, sdir=""):
+    if conns == None:
+        P = PRM_v2()
+        new_conns = deepcopy(P.conns)
+    else:
+        new_conns = deepcopy(conns)
+
+    if I == None:
+        P = PRM_v2()
+        new_I = deepcopy(P.I)
+    else:
+        new_I = deepcopy(I)
+
+    if exclude_invalid:
+        ref_tpp, ref_gpp = ref_power()
+        # print(ref_tpp, ref_gpp)
+
+    save_name = f"w{conn1}_{conn2}_theta_freq.png"
+
+    if plot_lpr:
+        fig, ax = plt.subplots(nrows=2, sharex=True,
+                               figsize=[9, 6.4], dpi=250)
+    else:
+        fig, ax = plt.subplots(figsize=[9, 3], dpi=250)
+
+    x_vec = np.linspace(conn_range[0], conn_range[1], num_pts)
+    p_vec = x_vec * new_conns[conn1][conn2]
+
+    theta = np.zeros(n_pts)
+    gamma = np.zeros(n_pts)
+    theta_std = np.zeros(n_pts)
+    gamma_std = np.zeros(n_pts)
+
+    theta_freq = np.zeros(n_pts)
+    theta_freq_std = np.zeros(n_pts)
+
+    if plot_lpr:
+        LPR = np.zeros(n_pts)
+        LPR_valid = np.zeros(n_pts)
+
+    for idx, val in tqdm(enumerate(p_vec)):
+        new_conns[conn1][conn2] = val
+        temp_theta, temp_gamma = np.zeros((5, 2)), np.zeros((5, 2))
+
+        for j in range(5):
+            temp_theta[j], temp_gamma[j] = run_prm(conns=new_conns, I=new_I)
+
+        theta[idx] = np.mean(temp_theta[:, 1])
+        theta_std[idx] = np.std(temp_theta[:, 1])
+        gamma[idx] = np.mean(temp_gamma[:, 1])
+        gamma_std[idx] = np.std(temp_gamma[:, 1])
+
+        theta_freq[idx] = np.mean(temp_theta[:, 0])
+        theta_freq_std[idx] = np.std(temp_theta[:, 0])
+
+        if plot_lpr:
+            LPR[idx] = np.log10(theta[idx] / gamma[idx])
+            if exclude_invalid:
+                if theta[idx] < (0.25 * ref_tpp) or gamma[idx] < (0.25 * ref_gpp):
+                    LPR_valid[idx] = np.nan
+                else:
+                    LPR_valid[idx] = LPR[idx]
+
+    # ==============================================================================
+    # First subplot --> theta frequency vs stim
+    p1, = ax[0].plot(x_vec, theta_freq,
+                     ls='--', marker='.', color='C0')  # plot theta freq
+    ax[0].fill_between(x_vec, theta_freq - theta_freq_std, theta_freq + theta_freq_std,
+                       color="C0", alpha=0.2)  # plot theta error
+
+    # subplot 1 axes and labels
+    ax[0].set_title(f"$w_{{{conn1.upper()} \\rightarrow {conn2.upper()}}}$")
+    ax[0].set_xlim(x_vec[0], x_vec[-1])
+    ax[0].set_ylabel("Theta Frequency")
+
+    ax[0].yaxis.label.set_color(p1.get_color())
+
+    ax[0].tick_params(axis='y', colors=p1.get_color())
+    ax[0].grid(axis='x')
+    # end of first subplot
+    # ==============================================================================
+    # ==============================================================================
+    # second subplot --> log power ratio vs stim
+    ax[1].plot(x_vec, LPR,
+               ls='--', marker='.', color='C0')
+    if exclude_invalid:
+        ax[1].plot(x_vec, LPR_valid,
+                   ls='', marker='.', color='C3')
+
+    # subplot 2 axes and labels
+    ax[1].set_xlabel("%$\Delta$ Parameter")
+    ax[1].set_ylabel("Log Power Ratio")
+    ax[1].grid(axis='x')
+
+    # ax.grid()
+    plt.tight_layout()
+    try:
+        plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
+    except FileNotFoundError:
+        os.mkdir(f"./figures/1d_metric3/{sdir}")
+        plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
+
+
 # ===============================================================
 # Parameters
 T = 8.0  # total time (units in sec)
@@ -439,20 +546,21 @@ c_list = ["pyr", "bic", "pv", "cck"]
 #     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'theta', 'power')["pyr"] /
 #     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'gamma', 'power')["pyr"]
 # )
-with open("search_results/search_results_conn_6.json", "r") as f:
+conn_file_num = 7
+n = 92
+with open(f"search_results/search_results_conn_{conn_file_num}.json", "r") as f:
     conn_data = json.load(f)
 
-new_conns = conn_data[26]
+new_conns = conn_data[n]
 # ===============================================================
 
 # cell type to look at
-ctype = "pyr"
+ctype = "pv"
 
-num_pts = 21  # number of points to plot
+num_pts = 61  # number of points to plot
 
 max_inputs = len(c_list)
 
-# INPUTS TO CELL TYPE
 # for ctype in c_list:
 #     plot_1d(ctype, max_inputs, num_pts, conns=new_conns,
 #             exclude_invalid=True, sdir="conn_6_26/6_26_w_plots")
@@ -466,9 +574,14 @@ max_inputs = len(c_list)
 #     print(f"Completed for {ctype} cell")
 
 # STIM VS THETA FREQ
-plot_stim_v_freq(ctype, num_pts, conns=new_conns,
-                 sdir="conn_6_26")
+# for ctype in ["cck", "pv"]:
+#     plot_stim_v_freq(ctype, num_pts, conns=new_conns,
+#                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
 
+# for ctype in ["cck", "pv"]:
+#     plot_stim_v_freq(ctype, num_pts, conns="default",
+#                      sdir=f"new_ref_set/ref_stim_v_freq", stim_range=(-2, 2))
 
-
+plot_conn_v_theta_freq("pyr", "pyr", num_pts, conns=new_conns,
+                       sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_freq")
 plt.show()
