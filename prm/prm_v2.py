@@ -273,6 +273,84 @@ def add_to_plot(conns, label, pcolor=None):
 
     v = np.array(v).reshape(16)
 
+def create_radar():
+    ref = PRM_v2()
+    v = []
+    for c in [*ref.conns]:
+        v.append([*ref.conns[c].values()])
+    v = np.array(v).reshape(16)
+    c_list = ["pyr", "bic", "pv", "cck"]
+    conn_labels = []
+    for c in c_list:
+        for c2 in c_list:
+            conn_labels.append(f"$w_{{{c.upper()} \\rightarrow {c2.upper()}}}$")
+
+    invalid = np.where(v == 0)
+    conn_labels = np.delete(conn_labels, invalid)
+    num_labels = len(conn_labels)
+
+    angles = np.linspace(0, 2 * np.pi, num_labels, endpoint=False)
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+    # line up first datapoint with vertical axis
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+
+    # clean up the labels so they don't overlap with the grid lines
+    ax.set_thetagrids(np.degrees(angles), conn_labels)
+    for label, angle in zip(ax.get_xticklabels(), angles):
+        if angle in (0, np.pi):
+            label.set_horizontalalignment('center')
+        elif 0 < angle < np.pi:
+            label.set_horizontalalignment('left')
+        else:
+            label.set_horizontalalignment('right')
+
+    # ax.set_ylim(0, 3)
+
+    ax.set_rlabel_position(180 / num_labels)
+    # Add some custom styling.
+    # Change the color of the tick labels.
+    ax.tick_params(colors='#222222')
+    # Make the y-axis (0-100) labels smaller.
+    ax.tick_params(axis='y', labelsize=8)
+    # Change the color of the circular gridlines.
+    ax.grid(color='#AAAAAA')
+    # Change the color of the outermost gridline (the spine).
+    ax.spines['polar'].set_color('#222222')
+    # Change the background color inside the circle itself.
+    ax.set_facecolor('#FAFAFA')
+
+    return ax
+
+def plot_radar(in_conns):
+    conns = deepcopy(in_conns)
+    v = []
+
+    for c in [*conns]:
+        v.append([*conns[c].values()])
+    v = np.array(v).reshape(16)
+    c_list = ["pyr", "bic", "pv", "cck"]
+
+    conn_labels = []
+    for c in c_list:
+        for c2 in c_list:
+            conn_labels.append(f"$w_{{{c.upper()} \\rightarrow {c2.upper()}}}$")
+
+    invalid = np.where(v == 0)
+
+    v = np.delete(v, invalid)
+    conn_labels = np.delete(conn_labels, invalid)
+
+    num_labels = len(conn_labels)
+
+    angles = np.linspace(0, 2 * np.pi, num_labels, endpoint=False)
+    v = np.append(v, v[0])
+    v = 10*abs(v)
+    angles = np.append(angles, angles[0])
+    # Draw the outline of our data.
+    ax.plot(angles, v, linewidth=1)
+    # Fill it in.
+    ax.fill(angles, v, alpha=0.25)
 
 
 def plot_conns(in_conns, in_ref_conns = None):
@@ -382,7 +460,7 @@ tau = 5
 h = 0
 # r_o = 30
 # ===============================================================
-# new_prm = PRM_v2()
+new_prm = PRM_v2()
 #
 
 #
@@ -394,5 +472,8 @@ h = 0
 # dps_gpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'gamma', 'power', plot_Fig=True)["pyr"]
 #
 # print(dps_tpp, dps_gpp)
-#
-# plt.show()
+
+ax = create_radar()
+plot_radar(new_prm.conns)
+
+plt.show()

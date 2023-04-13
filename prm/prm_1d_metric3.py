@@ -677,6 +677,7 @@ max_inputs = len(c_list)
 #     plot_1d(ctype, max_inputs, num_pts, conns=new_conns,
 #             exclude_invalid=True, sdir="conn_6_26/6_26_w_plots")
 #     print(f"Completed for {ctype} cell")
+# =================================================================================================
 
 # STIM VS THETA GAMMA POWER
 # plot_stim_theta_gamma(ctype, num_pts, conns=new_conns, exclude_invalid=True)
@@ -684,23 +685,32 @@ max_inputs = len(c_list)
 #     plot_stim_theta_gamma(ctype, num_pts, conns="default",
 #                           exclude_invalid=True, sdir="new_ref_set/ref_theta_gamma_plots")
 #     print(f"Completed for {ctype} cell")
+# =================================================================================================
 
 # STIM VS THETA FREQ
 # for ctype in ["cck", "pv"]:
 #     plot_stim_v_freq(ctype, num_pts, conns=new_conns,
 #                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
-plot_stim_v_freq("bic", num_pts, conns=new_conns,
-                     sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
+# plot_stim_v_freq("bic", num_pts, conns=new_conns,
+#                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
+# plot_stim_v_freq("bic", num_pts,
+#                     sdir=f"new_ref_set/ref6_stim_v_freq", stim_range=(-2, 2))
 # for ctype in ["cck", "pv"]:
 #     plot_stim_v_freq(ctype, num_pts, conns="default",
 #                      sdir=f"new_ref_set/ref_stim_v_freq", stim_range=(-2, 2))
-
-# plot_conn_v_theta_freq("pyr", "pyr", num_pts, conns=new_conns,
+# =================================================================================================
+# CONN VS THETA FREQ
+# plot_conn_v_theta_freq("cck", "pv", num_pts, conns=new_conns,
 #                        sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_freq")
-
-# plot_conn_v_theta_gamma("pyr", "pyr", num_pts, conns=new_conns,
+plot_conn_v_theta_freq("cck", "cck", num_pts, conns=None,
+                       sdir="new_ref_set/ref_conn_v_freq")
+# =================================================================================================
+# CONN VS THETA/GAMMA POWER
+# plot_conn_v_theta_gamma("cck", "pv", num_pts, conns=new_conns,
 #                        sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_power")
 
-# plot_conn_v_theta_gamma("cck", "pv", num_pts, conns=None,
-#                        sdir="new_ref_set/ref_conn_v_power")
+plot_conn_v_theta_gamma("cck", "cck", num_pts, conns=None,
+                       sdir="new_ref_set/ref_conn_v_power")
+# =================================================================================================
+
 plt.show()
