@@ -75,7 +75,7 @@ stim = {
 # for i in range(10):
 #     print(run_prm(conn_data[n], stim=stim))
 
-print(run_prm(plot=True))
+# print(run_prm(plot=True))
 #
 # l2_list = np.zeros(len(conn_data))
 #
@@ -83,5 +83,14 @@ print(run_prm(plot=True))
 #     l2_list[idx] = l2_ref(conn, ref_conns)
 #
 # plt.plot(l2_list, 'o')
+
+ax1 = create_radar()
+
+plot_radar(ref_conns, ax1, label = "ref")
+
+for j in [26, 71]:
+    plot_radar(conn_data[j], ax1, label = f"conn_6_{j}")
+
+plt.legend()
 plt.tight_layout()
 plt.show()

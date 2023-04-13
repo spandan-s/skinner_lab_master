@@ -322,7 +322,7 @@ def create_radar():
 
     return ax
 
-def plot_radar(in_conns):
+def plot_radar(in_conns, ax, label=None):
     conns = deepcopy(in_conns)
     v = []
 
@@ -348,7 +348,7 @@ def plot_radar(in_conns):
     v = 10*abs(v)
     angles = np.append(angles, angles[0])
     # Draw the outline of our data.
-    ax.plot(angles, v, linewidth=1)
+    ax.plot(angles, v, linewidth=1, label=label)
     # Fill it in.
     ax.fill(angles, v, alpha=0.25)
 
@@ -473,7 +473,7 @@ new_prm = PRM_v2()
 #
 # print(dps_tpp, dps_gpp)
 
-ax = create_radar()
-plot_radar(new_prm.conns)
+# ax = create_radar()
+# plot_radar(new_prm.conns)
 
 plt.show()
