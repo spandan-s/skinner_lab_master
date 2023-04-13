@@ -379,7 +379,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
                        color="C0", alpha=0.2)  # plot theta error
 
     # subplot 1 axes and labels
-    ax[0].set_title(f"Stimulation to {ctype} cell".upper())
+    ax[0].set_title(f"Stimulation to {cell} cell".upper())
     ax[0].set_xlim(x_vec[0], x_vec[-1])
     ax[0].set_ylabel("Theta Frequency")
 
@@ -667,7 +667,7 @@ new_conns = conn_data[n]
 # ===============================================================
 
 # cell type to look at
-ctype = "pv"
+# ctype = "bic"
 
 num_pts = 61  # number of points to plot
 
@@ -689,7 +689,8 @@ max_inputs = len(c_list)
 # for ctype in ["cck", "pv"]:
 #     plot_stim_v_freq(ctype, num_pts, conns=new_conns,
 #                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
-
+plot_stim_v_freq("bic", num_pts, conns=new_conns,
+                     sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
 # for ctype in ["cck", "pv"]:
 #     plot_stim_v_freq(ctype, num_pts, conns="default",
 #                      sdir=f"new_ref_set/ref_stim_v_freq", stim_range=(-2, 2))
@@ -697,6 +698,9 @@ max_inputs = len(c_list)
 # plot_conn_v_theta_freq("pyr", "pyr", num_pts, conns=new_conns,
 #                        sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_freq")
 
-plot_conn_v_theta_gamma("pyr", "pyr", num_pts, conns=new_conns,
-                       sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_power")
+# plot_conn_v_theta_gamma("pyr", "pyr", num_pts, conns=new_conns,
+#                        sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_power")
+
+# plot_conn_v_theta_gamma("cck", "pv", num_pts, conns=None,
+#                        sdir="new_ref_set/ref_conn_v_power")
 plt.show()
