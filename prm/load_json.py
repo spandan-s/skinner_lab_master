@@ -20,6 +20,9 @@ def l2_ref(conns, ref_conns):
 with open("search_results/search_results_conn_6.json", "r") as f:
     conn_data = json.load(f)
 
+with open("search_results/search_results_conn_7.json", "r") as f:
+    conn_data_2 = json.load(f)
+
 # with open("search_results/search_results_i_4.json", "r") as f:
 #     i_data = json.load(f)
 
@@ -70,7 +73,28 @@ stim = {
     "cck": 0.0
 }
 
+pst = 7 * len(time) // 8
 
+prm_0 = PRM_v2()
+prm_1 = PRM_v2(conns_dict=conn_data[26])
+prm_2 = PRM_v2(conns_dict=conn_data[71])
+prm_3 = PRM_v2(conns_dict=conn_data_2[92])
+
+prm_list = [prm_0, prm_1, prm_2, prm_3]
+
+fig, ax = plt.subplots(2, 2, True, True, figsize=[12, 4.8])
+
+line_style = ['solid', 'dotted', 'dashed', 'dashdot']
+for i in range(4):
+    prm_list[i].set_init_state(len(time))
+    prm_list[i] = simulate(time, prm_list[i])
+    ax[i//2, i%2].plot(time[pst:], prm_list[i].R["pyr"][pst:],
+             color="C0")
+    ax[i//2, i%2].set_title(f"Set {i}")
+
+
+# ax[1, :].set_xlabel("Time [s]")
+# ax[:, 0].set_ylabel("PYR cell activity")
 # print(test_prm())
 # for i in range(10):
 #     print(run_prm(conn_data[n], stim=stim))
@@ -84,13 +108,13 @@ stim = {
 #
 # plt.plot(l2_list, 'o')
 
-ax1 = create_radar()
+# ax1 = create_radar()
+#
+# plot_radar(ref_conns, ax1, label = "ref")
+#
+# for j in [26, 71]:
+#     plot_radar(conn_data[j], ax1, label = f"conn_6_{j}")
 
-plot_radar(ref_conns, ax1, label = "ref")
-
-for j in [26, 71]:
-    plot_radar(conn_data[j], ax1, label = f"conn_6_{j}")
-
-plt.legend()
+# plt.legend()
 plt.tight_layout()
 plt.show()

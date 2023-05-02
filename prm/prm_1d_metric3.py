@@ -309,8 +309,8 @@ def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default",
 
 def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
                      stim_range=(-2, 2),
-                     plot_lpr=True, exclude_invalid=True, draw_fit=False, sdir=""):
-    draw_fit = False  # override
+                     plot_lpr=True, exclude_invalid=True, draw_fit=True, sdir=""):
+    # draw_fit = False  # override
     new_conns = deepcopy(conns)
     new_I = deepcopy(I)
 
@@ -378,18 +378,22 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
                     theta_freq_valid[idx] = theta_freq[idx]
 
     if draw_fit:
+        x_valid = x_valid[~np.isnan(x_valid)]
+        theta_freq_valid = theta_freq_valid[~np.isnan(theta_freq_valid)]
         a1, a0 = np.polyfit(x_valid, theta_freq_valid, 1)
         print(a1, a0)
+        text_coords = (stim_range[0] + 0.1*(stim_range[1] - stim_range[0]), max(theta_freq))
     # ==============================================================================
     # First subplot --> theta frequency vs stim
     p1, = ax[0].plot(x_vec, theta_freq,
                      ls='--', marker='.', color='C0')  # plot theta freq
     if exclude_invalid:
-        ax[0].plot(x_vec, theta_freq_valid,
+        ax[0].plot(x_valid, theta_freq_valid,
                    ls="", marker=".", color="C3")
         if draw_fit:
-            ax[0].plot(x_valid, a0 + a1 * x_vec,
+            ax[0].plot(x_valid, a0 + a1 * x_valid,
                        ls="dotted", color="purple")
+            ax[0].text(*text_coords, f"r = {a1.round(3)}")
     ax[0].fill_between(x_vec, theta_freq - theta_freq_std, theta_freq + theta_freq_std,
                        color="C0", alpha=0.2)  # plot theta error
 
@@ -420,7 +424,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
 
     # ax.grid()
     plt.tight_layout()
-    plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
+    # plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
 
 
 def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
@@ -686,7 +690,7 @@ new_conns = conn_data[n]
 # cell type to look at
 ctype = "pyr"
 
-num_pts = 61  # number of points to plot
+num_pts = 21  # number of points to plot
 
 max_inputs = len(c_list)
 
@@ -706,7 +710,7 @@ max_inputs = len(c_list)
 #     print(f"Completed for {ctype} cell")
 
 # STIM VS THETA FREQ
-for ctype in ["pyr", "bic", "cck", "pv"]:
+for ctype in ["bic"]:
     plot_stim_v_freq(ctype, num_pts, conns=new_conns,
                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
 # plot_stim_v_freq("bic", num_pts, conns=new_conns,
