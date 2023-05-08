@@ -184,7 +184,7 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
 
     # ax.grid()
     plt.tight_layout()
-    plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
+    plt.savefig(f"./figures/{sdir}/{save_name}")
 
 
 def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default",
@@ -424,7 +424,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
 
     # ax.grid()
     plt.tight_layout()
-    # plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
+    plt.savefig(f"./figures/{sdir}/{save_name}")
 
 
 def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
@@ -679,8 +679,8 @@ c_list = ["pyr", "bic", "pv", "cck"]
 #     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'theta', 'power')["pyr"] /
 #     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'gamma', 'power')["pyr"]
 # )
-conn_file_num = 7
-n = 92
+conn_file_num = 6
+n = 26
 with open(f"search_results/search_results_conn_{conn_file_num}.json", "r") as f:
     conn_data = json.load(f)
 
@@ -690,7 +690,7 @@ new_conns = conn_data[n]
 # cell type to look at
 ctype = "pyr"
 
-num_pts = 21  # number of points to plot
+num_pts = 61  # number of points to plot
 
 max_inputs = len(c_list)
 
@@ -706,18 +706,24 @@ max_inputs = len(c_list)
 #                       exclude_invalid=True, sdir=f"new_ref_set/ref_theta_gamma_plots")
 # for ctype in c_list:
 #     plot_stim_theta_gamma(ctype, num_pts, conns="default",
-#                           exclude_invalid=True, sdir="new_ref_set/ref_theta_gamma_plots")
+#                           exclude_invalid=True, sdir="set_0/set_0_theta_gamma_plots")
 #     print(f"Completed for {ctype} cell")
+for ctype in c_list:
+    plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
+                          exclude_invalid=True, sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_theta_gamma_plots")
+    print(f"Completed for {ctype} cell")
 
 # STIM VS THETA FREQ
-for ctype in ["bic"]:
+for ctype in ["pyr", "cck", "pv", "bic"]:
     plot_stim_v_freq(ctype, num_pts, conns=new_conns,
                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
+    print(f"Completed for {ctype} cell")
 # plot_stim_v_freq("bic", num_pts, conns=new_conns,
 #                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
-# for ctype in ["bic", "cck", "pv"]:
+# for ctype in c_list:
 #     plot_stim_v_freq(ctype, num_pts, conns="default",
-#                      sdir=f"new_ref_set/ref_stim_v_freq", stim_range=(-2, 2))
+#                      sdir=f"set_0/set_0_stim_v_freq", stim_range=(-2, 2))
+#     print(f"Completed for {ctype} cell")
 
 # plot_conn_v_theta_freq("pv", "pyr", num_pts, conns=new_conns,
 #                        sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_freq")

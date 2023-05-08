@@ -80,17 +80,27 @@ prm_1 = PRM_v2(conns_dict=conn_data[26])
 prm_2 = PRM_v2(conns_dict=conn_data[71])
 prm_3 = PRM_v2(conns_dict=conn_data_2[92])
 
-prm_list = [prm_0, prm_1, prm_2, prm_3]
 
-fig, ax = plt.subplots(2, 2, True, True, figsize=[12, 4.8])
+run_prm(prm_0.conns, plot=True)
+plt.savefig("figures/set_0/6_26_activity_plot_nn.png")
+run_prm(prm_1.conns, plot=True)
+plt.savefig("figures/conn_6_26/6_26_activity_plot_nn.png")
 
-line_style = ['solid', 'dotted', 'dashed', 'dashdot']
-for i in range(4):
-    prm_list[i].set_init_state(len(time))
-    prm_list[i] = simulate(time, prm_list[i])
-    ax[i//2, i%2].plot(time[pst:], prm_list[i].R["pyr"][pst:],
-             color="C0")
-    ax[i//2, i%2].set_title(f"Set {i}")
+# run_prm(prm_2.conns, plot=True)
+run_prm(prm_3.conns, plot=True)
+plt.savefig("figures/conn_7_92/6_26_activity_plot_nn.png")
+
+# prm_list = [prm_0, prm_1, prm_2, prm_3]
+#
+# fig, ax = plt.subplots(2, 2, True, True, figsize=[12, 4.8])
+#
+# line_style = ['solid', 'dotted', 'dashed', 'dashdot']
+# for i in range(4):
+#     prm_list[i].set_init_state(len(time))
+#     prm_list[i] = simulate(time, prm_list[i])
+#     ax[i//2, i%2].plot(time[pst:], prm_list[i].R["pyr"][pst:],
+#              color="C0")
+#     ax[i//2, i%2].set_title(f"Set {i}")
 
 
 # ax[1, :].set_xlabel("Time [s]")

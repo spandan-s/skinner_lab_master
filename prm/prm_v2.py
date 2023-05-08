@@ -60,14 +60,14 @@ class PRM_v2:
 
     def _set_inputs(self, param_dict='default'):
         self.D = {
-            "pyr": 0.001,
-            "bic": 0.001,
-            "pv": 0.001,
-            "cck": 0.001
+            "pyr": 0.00,
+            "bic": 0.00,
+            "pv": 0.00,
+            "cck": 0.00
         }
         if param_dict == "default":
             self.I = {
-                "pyr": 0.001,
+                "pyr": 0.01,
                 "bic": -1.4,
                 "pv": 0.5,
                 "cck": 0.8,
@@ -215,7 +215,7 @@ def plot_trace(time, R, labels):
     plot_start_time = 3 * time.size // 4
     plt.figure(figsize=[13, 8])
 
-    c_list = ["pyr", "bic", "pv", "cck"]
+    c_list = ["pyr", "bic", "cck", "pv"]
     for c in c_list:
         plt.plot(time[plot_start_time:], R[c][plot_start_time:], label=labels[c])
 
@@ -460,13 +460,14 @@ tau = 5
 h = 0
 # r_o = 30
 # ===============================================================
-new_prm = PRM_v2()
-#
-
-#
+# new_prm = PRM_v2()
+# #
+# for idx in new_prm.D:
+#     new_prm.D[idx] = 0.0
 # new_prm.set_init_state(len(time))
 # new_prm = simulate(time, new_prm, dt, tau)
-#
+# print(new_prm.D)
+# #
 # plot_trace(time, new_prm.R, new_prm.labels)
 # dps_tpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'theta', 'power', plot_Fig=True)["pyr"]
 # dps_gpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'gamma', 'power', plot_Fig=True)["pyr"]
@@ -476,4 +477,4 @@ new_prm = PRM_v2()
 # ax = create_radar()
 # plot_radar(new_prm.conns)
 
-plt.show()
+# plt.show()
