@@ -322,13 +322,18 @@ def create_radar():
 
     return ax
 
-def plot_radar(in_conns, ax, label=None):
+def plot_radar(in_conns, ax,
+               color=None, label=None, relative_to_ref=False):
     conns = deepcopy(in_conns)
     v = []
+    ref = PRM_v2()
+    v_ref = []
 
     for c in [*conns]:
         v.append([*conns[c].values()])
+        v_ref.append([*ref.conns[c].values()])
     v = np.array(v).reshape(16)
+    v_ref = np.array(v_ref).reshape(16)
     c_list = ["pyr", "bic", "pv", "cck"]
 
     conn_labels = []
@@ -339,18 +344,27 @@ def plot_radar(in_conns, ax, label=None):
     invalid = np.where(v == 0)
 
     v = np.delete(v, invalid)
+    v_ref = np.delete(v_ref, invalid)
     conn_labels = np.delete(conn_labels, invalid)
 
     num_labels = len(conn_labels)
 
     angles = np.linspace(0, 2 * np.pi, num_labels, endpoint=False)
     v = np.append(v, v[0])
-    v = 10*abs(v)
+
     angles = np.append(angles, angles[0])
-    # Draw the outline of our data.
-    ax.plot(angles, v, linewidth=1, label=label)
-    # Fill it in.
-    ax.fill(angles, v, alpha=0.25)
+    if relative_to_ref:
+        v_ref = np.append(v_ref, v_ref[0])
+        v_ratio = v/v_ref
+        ax.plot(angles, v_ratio, color=color, linewidth=0.5, label=label, alpha=0.8)
+        ax.fill(angles, v_ratio, color=color, alpha=0.5)
+
+    else:
+        v = 10 * abs(v)
+        # Draw the outline of our data.
+        ax.plot(angles, v, color=color, linewidth=0.5, label=label, alpha=0.8)
+        # Fill it in.
+        ax.fill(angles, v, color=color, alpha=0.5)
 
 
 def plot_conns(in_conns, in_ref_conns = None):
