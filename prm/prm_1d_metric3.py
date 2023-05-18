@@ -83,6 +83,7 @@ def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default", exclude_in
 
 
 def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
+                          n_trials=1,
                           plot_lpr=True, exclude_invalid=True, stim_range=(-2, 2), sdir=""):
     new_conns = deepcopy(conns)
     new_I = deepcopy(I)
@@ -122,18 +123,15 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
 
     for idx, val in tqdm(enumerate(x_vec)):
         stim[cell] = val
-        temp_theta, temp_gamma = np.zeros(5), np.zeros(5)
+        temp_theta, temp_gamma = np.zeros((n_trials, 2)), np.zeros((n_trials, 2))
 
-        for j in range(5):
-            P.set_init_state(len(time))
-            P = simulate(time, P, dt, tau, stim=stim)
-            temp_theta[j] = calc_spectral(P.R, fs, time, 'theta', 'power')["pyr"]
-            temp_gamma[j] = calc_spectral(P.R, fs, time, 'gamma', 'power')["pyr"]
+        for j in range(n_trials):
+            temp_theta[j], temp_gamma[j] = run_prm(conns=new_conns, I=new_I, stim=stim)
 
-        theta[idx] = np.mean(temp_theta)
-        theta_std[idx] = np.std(temp_theta)
-        gamma[idx] = np.mean(temp_gamma)
-        gamma_std[idx] = np.std(temp_gamma)
+        theta[idx] = np.mean(temp_theta[:, 1])
+        theta_std[idx] = np.std(temp_theta[:, 1])
+        gamma[idx] = np.mean(temp_gamma[:, 1])
+        gamma_std[idx] = np.std(temp_gamma[:, 1])
 
         if plot_lpr:
             LPR[idx] = np.log10(theta[idx] / gamma[idx])
@@ -155,7 +153,7 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
                      color="C1", alpha=0.2)  # plot gamma error
 
     # subplot 1 axes and labels
-    ax[0].set_title(f"Stimulation to {ctype} cell".upper())
+    ax[0].set_title(f"Stimulation to {cell} cell".upper())
     ax[0].set_xlim(x_vec[0], x_vec[-1])
     ax[0].set_ylabel("Theta Power")
     ax1.set_ylabel("Gamma Power")
@@ -184,7 +182,7 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
 
     # ax.grid()
     plt.tight_layout()
-    plt.savefig(f"./figures/{sdir}/{save_name}")
+    # plt.savefig(f"./figures/{sdir}/{save_name}")
 
 
 def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default",
@@ -308,7 +306,7 @@ def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default",
 
 
 def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
-                     stim_range=(-2, 2),
+                     stim_range=(-2, 2), n_trials=1,
                      plot_lpr=True, exclude_invalid=True, draw_fit=True, sdir=""):
     # draw_fit = False  # override
     new_conns = deepcopy(conns)
@@ -351,9 +349,9 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
 
     for idx, val in tqdm(enumerate(x_vec)):
         stim[cell] = val
-        temp_theta, temp_gamma = np.zeros((5, 2)), np.zeros((5, 2))
+        temp_theta, temp_gamma = np.zeros((n_trials, 2)), np.zeros((n_trials, 2))
 
-        for j in range(5):
+        for j in range(n_trials):
             temp_theta[j], temp_gamma[j] = run_prm(conns=new_conns, I=new_I, stim=stim)
 
         theta[idx] = np.mean(temp_theta[:, 1])
@@ -424,7 +422,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
 
     # ax.grid()
     plt.tight_layout()
-    plt.savefig(f"./figures/{sdir}/{save_name}")
+    # plt.savefig(f"./figures/{sdir}/{save_name}")
 
 
 def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
@@ -702,24 +700,29 @@ max_inputs = len(c_list)
 # STIM VS THETA GAMMA POWER
 # plot_stim_theta_gamma(ctype, num_pts, conns=new_conns, stim_range=(-0.5, 0.5),
 #                       exclude_invalid=True, sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_theta_gamma_plots")
-# plot_stim_theta_gamma(ctype, num_pts, conns="default", stim_range=(-0.5, 0.5),
-#                       exclude_invalid=True, sdir=f"new_ref_set/ref_theta_gamma_plots")
+
+plot_stim_theta_gamma("cck", num_pts, conns="default", stim_range=(-2, 2),
+                      exclude_invalid=True, sdir=f"new_ref_set/ref_theta_gamma_plots")
+
 # for ctype in c_list:
 #     plot_stim_theta_gamma(ctype, num_pts, conns="default",
 #                           exclude_invalid=True, sdir="set_0/set_0_theta_gamma_plots")
 #     print(f"Completed for {ctype} cell")
-for ctype in c_list:
-    plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
-                          exclude_invalid=True, sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_theta_gamma_plots")
-    print(f"Completed for {ctype} cell")
+
+# for ctype in c_list:
+#     plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
+#                           exclude_invalid=True, sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_theta_gamma_plots")
+#     print(f"Completed for {ctype} cell")
 
 # STIM VS THETA FREQ
-for ctype in ["pyr", "cck", "pv", "bic"]:
-    plot_stim_v_freq(ctype, num_pts, conns=new_conns,
-                     sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
-    print(f"Completed for {ctype} cell")
-# plot_stim_v_freq("bic", num_pts, conns=new_conns,
+# for ctype in ["pyr", "cck", "pv", "bic"]:
+#     plot_stim_v_freq(ctype, num_pts, conns=new_conns,
 #                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
+#     print(f"Completed for {ctype} cell")
+
+plot_stim_v_freq("cck", num_pts, conns="default",
+                     sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
+
 # for ctype in c_list:
 #     plot_stim_v_freq(ctype, num_pts, conns="default",
 #                      sdir=f"set_0/set_0_stim_v_freq", stim_range=(-2, 2))
@@ -733,6 +736,7 @@ for ctype in ["pyr", "cck", "pv", "bic"]:
 
 # plot_conn_v_theta_freq("pv", "pyr", num_pts, conns=None,
 #                        sdir="new_ref_set/ref_conn_v_freq")
+
 # plot_conn_v_theta_gamma("pv", "pyr", num_pts, conns=None,
 #                        sdir="new_ref_set/ref_conn_v_power")
 plt.show()

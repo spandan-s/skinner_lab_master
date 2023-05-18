@@ -224,17 +224,12 @@ def plot_trace(time, R, labels):
     plt.legend()
 
 
-def valid_oscillation(R, fs, time, ref=None):
+def valid_oscillation(R, fs, ref=None):
     if ref == None:
-        ref_prm = PRM_v2()
-        ref_prm.set_init_state(len(time))
-        ref_prm = simulate(time, ref_prm)
-        ref_tpp = calc_spectral(ref_prm.R, fs, time, 'theta', 'power')["pyr"]
-        ref_gpp = calc_spectral(ref_prm.R, fs, time, 'gamma', 'power')["pyr"]
-        ref = [ref_tpp, ref_gpp]
+        ref = ref_power()
 
-    tpp = calc_spectral(R, fs, time, 'theta', 'power')["pyr"]
-    gpp = calc_spectral(R, fs, time, 'gamma', 'power')["pyr"]
+    tpp = find_pyr_power(R, fs, 'theta')[1]
+    gpp = find_pyr_power(R, fs, 'gamma')[1]
 
     if (tpp >= (0.20 * ref[0])) and (gpp >= (0.2 * ref[1])):
         return [tpp, gpp]
@@ -259,10 +254,8 @@ def run_prm(conns=None, I=None, dt=0.001, T=8.0,
     if plot:
         plot_trace(time, new_prm.R, new_prm.labels)
 
-    tf = calc_spectral(new_prm.R, fs, time, 'theta', 'peak_freq', plot_Filter=False)["pyr"]
-    gf = calc_spectral(new_prm.R, fs, time, 'gamma', 'peak_freq', plot_Filter=False)["pyr"]
-    tpp = calc_spectral(new_prm.R, fs, time, 'theta', 'power', plot_Filter=False)["pyr"]
-    gpp = calc_spectral(new_prm.R, fs, time, 'gamma', 'power', plot_Filter=False)["pyr"]
+    tf, tpp = find_pyr_power(new_prm.R, fs, 'theta')
+    gf, gpp = find_pyr_power(new_prm.R, fs, 'gamma')
 
     return [tf, tpp], [gf, gpp]
 
@@ -448,19 +441,63 @@ def plot_conns(in_conns, in_ref_conns = None):
 
 def ref_power():
     ref_prm = PRM_v2()
+    n_trials = 1
 
-    temp_theta, temp_gamma = np.zeros(5), np.zeros(5)
+    temp_theta, temp_gamma = np.zeros(n_trials), np.zeros(n_trials)
 
-    for i in range(5):
+    for i in range(1):
         ref_prm.set_init_state(len(time))
         ref_prm = simulate(time, ref_prm)
 
-        temp_theta[i] = calc_spectral(ref_prm.R, fs, time, 'theta', 'power')["pyr"]
-        temp_gamma[i] = calc_spectral(ref_prm.R, fs, time, 'gamma', 'power')["pyr"]
+        temp_theta[i] = find_pyr_power(ref_prm.R, fs, "theta")[1]
+        temp_gamma[i] = find_pyr_power(ref_prm.R, fs, "gamma")[1]
 
     ref_tpp = np.mean(temp_theta)
     ref_gpp = np.mean(temp_gamma)
     return ref_tpp, ref_gpp
+
+def find_pyr_power(R, fs, band="theta"):
+    if band == "theta":
+        f_lo, f_hi = 3, 12
+    elif band == "gamma":
+        f_lo, f_hi = 20, 100
+    else:
+        raise IOError("Invalid band: Band must be 'theta' or 'gamma'")
+
+    segment = int(fs * 4)
+    myhann = signal.get_window('hann', segment)
+
+    myparams = dict(fs=fs, nperseg=segment, window=myhann,
+                    noverlap=segment / 2, scaling='density', return_onesided=True)
+
+    signal_pyr = R["pyr"][int(fs):]
+    signal_pv = R["pv"][int(fs):]
+
+    fxx_pyr, Pxx_pyr = signal.welch(signal_pyr, **myparams)
+    fxx_pv, Pxx_pv = signal.welch(signal_pv, **myparams)
+
+    fxx_pyr_filt = fxx_pyr[(fxx_pyr > f_lo) & (fxx_pyr < f_hi)]
+    Pxx_pyr_filt = Pxx_pyr[(fxx_pyr > f_lo) & (fxx_pyr < f_hi)]
+    fxx_pv_filt = fxx_pv[(fxx_pv > f_lo) & (fxx_pv < f_hi)]
+    Pxx_pv_filt = Pxx_pv[(fxx_pv > f_lo) & (fxx_pv < f_hi)]
+
+    f_max, P_max = np.nan, np.nan
+
+    if band == 'theta':
+        f_max, P_max = fxx_pyr_filt[np.argmax(Pxx_pyr_filt)], np.max(Pxx_pyr_filt)
+
+    if band == 'gamma':
+        f_max, P_max = fxx_pv_filt[np.argmax(Pxx_pv_filt)], Pxx_pyr_filt[np.argmax(Pxx_pv_filt)]
+
+
+    # testing (remove later)
+    # plt.figure()
+    # plt.plot(fxx_pyr_filt, Pxx_pyr_filt)
+    # plt.plot(fxx_pv_filt, Pxx_pv_filt)
+    # plt.plot(f_max, P_max, 'x')
+    # plt.semilogy()
+
+    return f_max, P_max
 # =============================================================
 # Parameters
 T = 8.0  # total time (units in sec)
