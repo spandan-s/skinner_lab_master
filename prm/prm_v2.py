@@ -67,8 +67,8 @@ class PRM_v2:
         }
         if param_dict == "default":
             self.I = {
-                "pyr": 0.01,
-                "bic": -1.4,
+                "pyr": 0.03,
+                "bic": -1.45,
                 "pv": 0.5,
                 "cck": 0.8,
             }
@@ -84,7 +84,7 @@ class PRM_v2:
         }
 
 
-def f(u, beta=10, h=0):
+def f(u, beta=20, h=0):
     return 1 / (1 + np.exp(-beta * (u - h)))
 
 
@@ -258,6 +258,13 @@ def run_prm(conns=None, I=None, dt=0.001, T=8.0,
     gf, gpp = find_pyr_power(new_prm.R, fs, 'gamma')
 
     return [tf, tpp], [gf, gpp]
+
+def pv_bic_ratio(R):
+
+    max_bic = np.max(R["bic"])
+    max_pv = np.max(R["pv"])
+
+    return max_pv/max_bic
 
 def add_to_plot(conns, label, pcolor=None):
     v = []
@@ -505,10 +512,10 @@ dt = 0.001  # plotting and Euler timestep (parameters adjusted accordingly)
 fs = 1/dt
 time = np.arange(0, T, dt)
 
-# FI curve
-beta = 10
-tau = 5
-h = 0
+# # FI curve
+# beta = 10
+# tau = 5
+# h = 0
 # r_o = 30
 # ===============================================================
 # new_prm = PRM_v2()
@@ -516,7 +523,8 @@ h = 0
 # for idx in new_prm.D:
 #     new_prm.D[idx] = 0.0
 # new_prm.set_init_state(len(time))
-# new_prm = simulate(time, new_prm, dt, tau)
+# new_prm = simulate(time, new_prm, dt)
+# print(pv_bic_ratio(new_prm.R))
 # print(new_prm.D)
 # #
 # plot_trace(time, new_prm.R, new_prm.labels)

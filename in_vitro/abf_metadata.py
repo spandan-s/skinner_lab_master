@@ -12,17 +12,21 @@ import matplotlib.pyplot as plt
 from time import time
 
 def get_abf_metadata(fn, write_to_file=True, Plot=False):
-    save_fn = f'metadata/{fn.split(".")[0]}_metadata.txt'
+    save_fn = f'metadata/{fn.split(".")[0]}_metadata.txt' # filename to save metadata in
 
     start_time = time()
-    abf = pyabf.ABF(fn)
+    abf = pyabf.ABF(fn) # loads the abf file into memory
 
-    header = abf.headerText
+    header = abf.headerText # extracts the header text -- if you just want the metadata as a string you can stop here
+
+    # specific information that you might want to add
     soln = '(in mM): NaCl 125, KCl 3.5, NaH2PO4 1.25, CaCl2 1.5, MgSO4 1.5, NaHCO3 26 \
     and glucose 10. Aerated with 5%CO2-95%O2 (pH 7.35-7.4).'
+    rec_type = 'monopolar'
 
+    # important information to put at top of file
     lines = {
-        'RECORDING TYPE': 'monopolar',
+        'RECORDING TYPE': rec_type,
         'SOLUTION': soln,
         'SAMPLE RATE': str(abf.sampleRate),
         'FILE COMMENT': abf.abfFileComment,
@@ -51,12 +55,15 @@ def get_abf_metadata(fn, write_to_file=True, Plot=False):
             f.write('\n### FULL HEADER ###')
             f.write(header)
     print(f'Completed in {(time() - start_time):.2f} seconds. Metadata file saved in metadata folder.')
-    print('=========================================\n')
+    print('='*60+'\n')
 
+    # ====================================================================================================
+    # extract the vectors containing the signal
     sweepX = abf.sweepX
     sweepY = abf.sweepY
     sweepC = abf.sweepC
 
+    # plot the signal
     if Plot:
         plt.figure(figsize=[12, 9])
         plt.plot(sweepX, sweepY)
@@ -76,60 +83,3 @@ except FileExistsError:
 
 for fn in sorted(i for i in os.listdir(dir) if i.endswith('.abf')):
     get_abf_metadata(fn)
-
-# fn = '221004_5901cko_0026.abf'
-# save_fn = fn.split('.')[0] + '_metadata.txt'
-#
-# start_time = time()
-# abf = pyabf.ABF(fn)
-#
-# header = abf.headerText
-# soln = '(in mM): NaCl 125, KCl 3.5, NaH2PO4 1.25, CaCl2 1.5, MgSO4 1.5, NaHCO3 26 \
-# and glucose 10. Aerated with 5%CO2-95%O2 (pH 7.35-7.4).'
-#
-# lines = {
-#     'RECORDING TYPE': 'monopolar',
-#     'SOLUTION': soln,
-#     'SAMPLE RATE': str(abf.sampleRate),
-#     'FILE COMMENT': abf.abfFileComment,
-#     'X LABEL': abf.sweepLabelX,
-#     'Y LABEL': abf.sweepLabelY,
-#     'X UNITS': abf.sweepUnitsX,
-#     'Y UNITS': abf.sweepUnitsY
-#     }
-#
-# labels = []
-# for key, value in lines.items():
-#     labels.append(key)
-#
-# write_to_file = True
-# if write_to_file:
-#     with open(save_fn, 'w') as f:
-#         print('=========================================')
-#         print('Writing to file:', save_fn)
-#
-#         f.write('### IMPORTANT STUFF ###\n')
-#
-#         for label in labels:
-#             f.write(label + ': ')
-#             f.write(lines[label])
-#             f.write('\n')
-#
-#         f.write('\n### FULL HEADER ###')
-#         f.write(header)
-# print(f'Completed in {(time() - start_time):.2f} seconds')
-# print('=========================================\n')
-#
-# sweepX = abf.sweepX
-# sweepY = abf.sweepY
-# sweepC = abf.sweepC
-#
-# Plot = True
-# if Plot:
-#     plt.figure(figsize=[12, 9])
-#     plt.plot(sweepX, sweepY)
-#     plt.xlabel(lines['X LABEL'])
-#     plt.ylabel(lines['Y LABEL'])
-#     plt.title(fn.split('.')[0])
-#     plt.show()
-#     # plt.xlim(175, 195)

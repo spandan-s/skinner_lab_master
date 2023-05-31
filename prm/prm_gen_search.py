@@ -37,7 +37,7 @@ def gen_search(ref_conns, ref_is, max_iter=100):
                 # if (new_conn not in valid_conns) and (new_i not in valid_is):
                     valid_conns.append(new_conn)
                     valid_is.append(new_i)
-                    with open("search_results/search_results_conn_6.json", "w") as w:
+                    with open("search_results/search_results_conn_9.json", "w") as w:
                         json.dump(valid_conns, w)
                     # with open("search_results/search_results_i_4.json", "w") as w:
                     #     json.dump(valid_is, w)
@@ -79,9 +79,9 @@ dt = 0.001  # plotting and Euler timestep (parameters adjusted accordingly)
 fs = 1 / dt
 
 # FI curve
-beta = 10
-tau = 5
-h = 0
+# beta = 10
+# tau = 5
+# h = 0
 # r_o = 30
 
 c_list = ["pyr", "bic", "pv", "cck"]

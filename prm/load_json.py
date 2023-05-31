@@ -1,4 +1,6 @@
 import json
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -45,13 +47,17 @@ def l2_ref(conns, ref_conns):
     v1 = np.array(v1).reshape(16)
     v2 = np.array(v2).reshape(16)
 
-    return np.linalg.norm(v1-v2)
+    return np.linalg.norm(v1 - v2)
+
 
 # with open("search_results/search_results_conn_6.json", "r") as f:
 #     conn_data = json.load(f)
 #
 # with open("search_results/search_results_conn_7.json", "r") as f:
 #     conn_data_2 = json.load(f)
+
+with open("search_results/search_results_conn_9.json", "r") as f:
+    conn_data = json.load(f)
 
 # with open("search_results/search_results_i_4.json", "r") as f:
 #     i_data = json.load(f)
@@ -102,16 +108,61 @@ stim = {
     "pv": 0.0,
     "cck": 0.0
 }
-#
-# pst = 7 * len(time) // 8
-#
-# prm_0 = PRM_v2()
+
+pst = 7 * len(time) // 8
+
+prm_0 = PRM_v2()
 # prm_1 = PRM_v2(conns_dict=conn_data[26])
 # prm_2 = PRM_v2(conns_dict=conn_data[71])
 # prm_3 = PRM_v2(conns_dict=conn_data_2[92])
+
+# =============================================================
+# cck_stim_vec = np.linspace(-2, 2, 61)
+# cck_stim_vec = cck_stim_vec[(cck_stim_vec > -0.14) & (cck_stim_vec < 0.7)]
 #
+# count = 0
 #
-# run_prm(prm_0.conns, plot=True)
+# for cck_stim in cck_stim_vec:
+#     stim["cck"] = cck_stim
+#     prm_0.set_init_state(len(time))
+#     prm_0 = simulate(time, prm_0, stim=stim)
+#
+#     segment = int(fs * 4)
+#     myhann = signal.get_window('hann', segment)
+#
+#     myparams = dict(fs=fs, nperseg=segment, window=myhann,
+#                     noverlap=segment / 2, scaling='density', return_onesided=True)
+#
+#     pyr_filt_lo = filter_lfp(prm_0.R["pyr"], fs, [3, 12])
+#     pyr_filt_hi = filter_lfp(prm_0.R["pyr"], fs, [20, 100])
+#
+#     fft_lo = signal.welch(pyr_filt_lo, **myparams)
+#     fft_hi = signal.welch(pyr_filt_hi, **myparams)
+#
+#     fig, ax = plt.subplots(2)
+#     ax2 = ax[1].twinx()
+#
+#     ax[0].plot(time[pst:], prm_0.R["pyr"][pst:],
+#                color="C0")
+#     ax[0].set_xlabel("Time[s]")
+#     ax[0].set_ylabel("Activity")
+#
+#     ax[1].plot(fft_lo[0], fft_lo[1])
+#     ax2.plot(fft_hi[0], fft_hi[1], color="C1")
+#     # ax[1].semilogy()
+#     ax[1].set_xlim(-0.5, right=100)
+#     # ax[1].set_ylim(bottom=1e-7)
+#     ax[1].set_xlabel("Frequency [Hz]")
+#     ax[1].set_ylabel("Theta PSD")
+#     ax2.set_ylabel("Gamma PSD")
+#     ax[1].yaxis.label.set_color("C0")
+#     ax2.yaxis.label.set_color("C1")
+#     ax[1].tick_params(axis='y', colors="C0")
+#     ax2.tick_params(axis='y', colors="C1")
+#
+#     plt.suptitle(f"CCK STIM = {cck_stim.round(2)}")
+#     plt.savefig(f"./figures/cck_stim_2/cck_stim_{count}.png")
+#     count += 1
 # plt.savefig("figures/set_0/6_26_activity_plot_nn.png")
 # run_prm(prm_1.conns, plot=True)
 # plt.savefig("figures/conn_6_26/6_26_activity_plot_nn.png")
@@ -119,6 +170,8 @@ stim = {
 # # run_prm(prm_2.conns, plot=True)
 # run_prm(prm_3.conns, plot=True)
 # plt.savefig("figures/conn_7_92/6_26_activity_plot_nn.png")
+# =============================================================
+
 
 # prm_list = [prm_0, prm_1, prm_2, prm_3]
 #
@@ -131,6 +184,7 @@ stim = {
 #     ax[i//2, i%2].plot(time[pst:], prm_list[i].R["pyr"][pst:],
 #              color="C0")
 #     ax[i//2, i%2].set_title(f"Set {i}")
+# =============================================================
 
 
 # ax[1, :].set_xlabel("Time [s]")
@@ -141,14 +195,14 @@ stim = {
 
 # print(run_prm(plot=True))
 #
-with open("search_results/search_results_conn_8.json", "r") as f:
+with open("search_results/search_results_conn_9.json", "r") as f:
     conn_data = json.load(f)
-# l2_list = np.zeros(len(conn_data))
-#
-# for idx, conn in enumerate(conn_data):
-#     l2_list[idx] = l2_ref(conn, ref_conns)
-# #
-# clusters = k_means(conn_data, 12)
+l2_list = np.zeros(len(conn_data))
+
+for idx, conn in enumerate(conn_data):
+    l2_list[idx] = l2_ref(conn, ref_conns)
+# # #
+clusters = k_means(conn_data, 6)
 
 # sse = []
 # for k in range(1, 25):
@@ -173,18 +227,20 @@ with open("search_results/search_results_conn_8.json", "r") as f:
 #     for i in range(len(conn_cluster_idx)):
 #         plot_radar(conn_cluster_idx[i], ax1, relative_to_ref=True, color=f"C{idx}")
 
-# for i in range(clusters.n_clusters):
-#     with open("search_results/clusters.txt", "a") as f:
-#         f.write(str(np.arange(len(l2_list))[clusters.labels_ == i]))
-#         f.write("\n")
-#     plt.plot(np.arange(len(l2_list))[clusters.labels_ == i], 0*l2_list[clusters.labels_ == i] + i,
-#              color=f"C{i}", marker='.', ls="")
+for i in range(clusters.n_clusters):
+    with open("search_results/clusters.txt", "a") as f:
+        f.write(str(np.arange(len(l2_list))[clusters.labels_ == i]))
+        f.write("\n")
+    plt.plot(np.arange(len(l2_list))[clusters.labels_ == i], 0*l2_list[clusters.labels_ == i] + i,
+             color=f"C{i}", marker='.', ls="")
 
 # 149**, 139**, 18, 3*, 0, 17, 37*, 64*!, 12, 2*, 8*, 5*
 # 18, 0, 17, 12, 147, 137, 49??, 86,
 # print(run_prm(conn_data[149], plot=True))
 
 # plt.plot(l2_list, '.')
+#
+# plt.hist(l2_list, bins=20)
 
 # ax1 = create_radar()
 #
@@ -192,11 +248,27 @@ with open("search_results/search_results_conn_8.json", "r") as f:
 # for i in range(len(conn_data)):
 #     plot_radar(conn_data[i], ax1, relative_to_ref=True, color=f"C{clusters.labels_[i]}")
 
-for idx, val in enumerate([18, 0, 17, 12, 147, 137, 49, 86]):
-    ax1 = create_radar()
-    plot_radar(ref_conns, ax1, label="ref", relative_to_ref=True, color='black')
-    plot_radar(conn_data[val], ax1, relative_to_ref=True, color='red')
-    ax1.set_title(f"conn 8-{val}")
+# for idx, val in enumerate(sorted([18, 0, 17, 12, 147, 137, 49, 86])):
+#     new_prm = PRM_v2(conn_data[val])
+#     new_prm.set_init_state(len(time))
+#     new_prm = simulate(time, new_prm)
+#
+#     max_pv = np.max(new_prm.R["pv"][pst:])
+#     max_bic = np.max(new_prm.R["bic"][pst:])
+#     max_cck = np.max(new_prm.R["cck"][pst:])
+#     print(f"Conn 8-{val}: ")
+#     print(f"Max PV = {max_pv}")
+#     print(f"Max BiC = {max_bic}")
+#     print(f"Max CCK = {max_cck}")
+#     print(f"PV-BiC ratio = {max_pv/max_bic}")
+#     print(""*60)
+
+
+    # print(run_prm(conn_data[val], plot=True))
+#     ax1 = create_radar()
+#     plot_radar(ref_conns, ax1, label="ref", relative_to_ref=True, color='black')
+#     plot_radar(conn_data[val], ax1, relative_to_ref=True, color='red')
+#     ax1.set_title(f"conn 8-{val}")
 
 # with open("search_results/search_results_conn_7.json", "r") as f:
 #     conn_data = json.load(f)
