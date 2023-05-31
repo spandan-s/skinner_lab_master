@@ -53,8 +53,9 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
     pH0[0] = find_pyr_power(test_prm.R, fs, "theta")[1]
     pH0[1] = find_pyr_power(test_prm.R, fs, 'gamma')[1]
     pbr = pv_bic_ratio(test_prm.R)
+    max_cck = np.max(test_prm.R["cck"][int(fs):])
     if (pH0[0] >= (0.6 * dps_tpp)) and (pH0[1] >= (0.6 * dps_gpp)):
-        if pbr >= 0.67:
+        if (pbr >= 0.67) and (max_cck >= 4.2):
             h_test[0] = True
         else:
             # print("Failed 67% PV-BiC ratio threshold")

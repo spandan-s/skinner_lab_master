@@ -521,7 +521,7 @@ time = np.arange(0, T, dt)
 # h = 0
 # r_o = 30
 # ===============================================================
-new_prm = PRM_v2()
+# new_prm = PRM_v2()
 # #
 # for idx in new_prm.D:
 #     new_prm.D[idx] = 0.0
@@ -539,14 +539,22 @@ new_prm = PRM_v2()
 # ax = create_radar()
 # plot_radar(new_prm.conns)
 
-max_bic = np.max(new_prm.R['bic'])
-max_pv = np.max(new_prm.R['pv'])
+# max_bic = np.max(new_prm.R['bic'])
+# max_pv = np.max(new_prm.R['pv'])
+#
+#
+#
+# pst = int(fs)
+#
+# max_pv = np.max(new_prm.R["pv"][pst:])
+# max_bic = np.max(new_prm.R["bic"][pst:])
+# max_cck = np.max(new_prm.R["cck"][pst:])
+# print(f"Max PV = {max_pv}")
+# print(f"Max BiC = {max_bic}")
+# print(f"Max CCK = {max_cck}")
+# print(f"PV-BiC ratio = {max_pv/max_bic}")
+# run_prm(plot=True)
+# print(""*60)
 
 
-
-print(f"Max BiC Firing Rate: {max_bic}")
-print(f"Max PV Firing Rate: {max_pv}")
-print(f"PV-BiC ratio: {max_pv/max_bic}")
-
-
-plt.show()
+# plt.show()

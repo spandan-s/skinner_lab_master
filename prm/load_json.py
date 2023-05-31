@@ -1,12 +1,7 @@
 import json
-import os
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-from tqdm import tqdm
 from prm_v2 import *
-from prm_htest import hypothesis_test
+
 
 from kneed import KneeLocator
 from sklearn.datasets import make_blobs
@@ -56,7 +51,7 @@ def l2_ref(conns, ref_conns):
 # with open("search_results/search_results_conn_7.json", "r") as f:
 #     conn_data_2 = json.load(f)
 
-with open("search_results/search_results_conn_9.json", "r") as f:
+with open("search_results/search_results_conn_8.json", "r") as f:
     conn_data = json.load(f)
 
 # with open("search_results/search_results_i_4.json", "r") as f:
@@ -199,14 +194,15 @@ prm_0 = PRM_v2()
 
 # print(run_prm(plot=True))
 #
-with open("search_results/search_results_conn_9.json", "r") as f:
-    conn_data = json.load(f)
+with open("search_results/search_results_conn_10.json", "r") as f:
+    conn_data = np.array(json.load(f))
 l2_list = np.zeros(len(conn_data))
 
 for idx, conn in enumerate(conn_data):
     l2_list[idx] = l2_ref(conn, ref_conns)
-# # #
-clusters = k_means(conn_data, 6)
+# # # #
+clusters = k_means(conn_data, 13)
+# print(np.arange(len(conn_data))[clusters.labels_ == 2])
 
 # sse = []
 # for k in range(1, 25):
@@ -227,16 +223,16 @@ clusters = k_means(conn_data, 6)
 # for idx in range(clusters.n_clusters):
 #     conn_cluster_idx = conn_data[clusters.labels_ == idx]
 #     ax1 = create_radar()
-#     plot_radar(ref_conns, ax1, label="ref", relative_to_ref=False, color='black')
+#     plot_radar(ref_conns, ax1, label="ref", mode="absolute", color='black')
 #     for i in range(len(conn_cluster_idx)):
-#         plot_radar(conn_cluster_idx[i], ax1, relative_to_ref=True, color=f"C{idx}")
+#         plot_radar(conn_cluster_idx[i], ax1, mode="absolute", color=f"C{idx}")
 
-for i in range(clusters.n_clusters):
-    with open("search_results/clusters.txt", "a") as f:
-        f.write(str(np.arange(len(l2_list))[clusters.labels_ == i]))
-        f.write("\n")
-    plt.plot(np.arange(len(l2_list))[clusters.labels_ == i], 0*l2_list[clusters.labels_ == i] + i,
-             color=f"C{i}", marker='.', ls="")
+# for i in range(clusters.n_clusters):
+#     with open("search_results/clusters_10.txt", "a") as f:
+#         f.write(str(np.arange(len(l2_list))[clusters.labels_ == i]))
+#         f.write("\n")
+#     plt.plot(np.arange(len(l2_list))[clusters.labels_ == i], 0*l2_list[clusters.labels_ == i] + i,
+#              color=f"C{i}", marker='.', ls="")
 
 # 149**, 139**, 18, 3*, 0, 17, 37*, 64*!, 12, 2*, 8*, 5*
 # 18, 0, 17, 12, 147, 137, 49??, 86,
@@ -252,27 +248,37 @@ for i in range(clusters.n_clusters):
 # for i in range(len(conn_data)):
 #     plot_radar(conn_data[i], ax1, relative_to_ref=True, color=f"C{clusters.labels_[i]}")
 
-# for idx, val in enumerate(sorted([18, 0, 17, 12, 147, 137, 49, 86])):
-#     new_prm = PRM_v2(conn_data[val])
-#     new_prm.set_init_state(len(time))
-#     new_prm = simulate(time, new_prm)
-#
-#     max_pv = np.max(new_prm.R["pv"][pst:])
-#     max_bic = np.max(new_prm.R["bic"][pst:])
-#     max_cck = np.max(new_prm.R["cck"][pst:])
-#     print(f"Conn 8-{val}: ")
-#     print(f"Max PV = {max_pv}")
-#     print(f"Max BiC = {max_bic}")
-#     print(f"Max CCK = {max_cck}")
-#     print(f"PV-BiC ratio = {max_pv/max_bic}")
-#     print(""*60)
+for idx in range(clusters.n_clusters):
+    val = np.arange(len(l2_list))[clusters.labels_ == idx][0]
 
+    # with open("new_sets.txt", "a") as f:
+    #     f.write(f"Conn 10-{val}\n")
+    #     f.write(str(conn_data[val]))
+    #     f.write("\n"+"="*60 + "\n")
 
+    new_prm = PRM_v2(conn_data[val])
+    new_prm.set_init_state(len(time))
+    new_prm = simulate(time, new_prm)
+
+    max_pv = np.max(new_prm.R["pv"][pst:])
+    max_bic = np.max(new_prm.R["bic"][pst:])
+    max_cck = np.max(new_prm.R["cck"][pst:])
+    print(f"Conn 10-{val}: ")
+    print(f"Max PV = {np.round(max_pv, 3)}")
+    print(f"Max BiC = {np.round(max_bic, 3)}")
+    print(f"Max CCK = {np.round(max_cck, 3)}")
+    print(f"PV-BiC ratio = {np.round(max_pv/max_bic, 3)}")
+    print(""*60)
     # print(run_prm(conn_data[val], plot=True))
-#     ax1 = create_radar()
-#     plot_radar(ref_conns, ax1, label="ref", relative_to_ref=True, color='black')
-#     plot_radar(conn_data[val], ax1, relative_to_ref=True, color='red')
-#     ax1.set_title(f"conn 8-{val}")
+    # plt.title(f"Conn 10-{val}")
+    # plt.savefig(f"./figures/conn_10/activity_conn_10_{val}.png", dpi=300)
+
+    # ax1 = create_radar()
+    # plot_radar(ref_conns, ax1, label="ref", mode='relative', color='black')
+    # plot_radar(conn_data[val], ax1, mode='relative', color='red')
+    # ax1.set_title(f"conn 10-{val}")
+
+# run_prm(conn_data[254], plot=True)
 
 # with open("search_results/search_results_conn_7.json", "r") as f:
 #     conn_data = json.load(f)
@@ -289,5 +295,5 @@ for i in range(clusters.n_clusters):
 
 # plt.legend()
 # ax1.set_ylim(0, 3.5)
-plt.tight_layout()
-plt.show()
+# plt.tight_layout()
+# plt.show()
