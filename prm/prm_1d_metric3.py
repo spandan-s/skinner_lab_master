@@ -2,6 +2,7 @@ import json
 import os
 from copy import deepcopy
 
+from numpy.linalg import LinAlgError
 from tqdm import tqdm
 
 from prm_v2 import *
@@ -378,9 +379,15 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
     if draw_fit:
         x_valid = x_valid[~np.isnan(x_valid)]
         theta_freq_valid = theta_freq_valid[~np.isnan(theta_freq_valid)]
-        a1, a0 = np.polyfit(x_valid, theta_freq_valid, 1)
-        print(a1, a0)
+        try:
+            a1, a0 = np.polyfit(x_valid, theta_freq_valid, 1)
+            print(a1, a0)
+        except LinAlgError:
+            a1, a0 = np.nan, np.nan
         text_coords = (stim_range[0] + 0.1*(stim_range[1] - stim_range[0]), max(theta_freq))
+        print(f"Valid Stim Range: {np.min(x_valid).round(2), np.max(x_valid).round(2)}")
+        print(f"Theta Frequency Range: {np.min(theta_freq_valid), np.max(theta_freq_valid)}")
+
     # ==============================================================================
     # First subplot --> theta frequency vs stim
     p1, = ax[0].plot(x_vec, theta_freq,
@@ -391,7 +398,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         if draw_fit:
             ax[0].plot(x_valid, a0 + a1 * x_valid,
                        ls="dotted", color="purple")
-            ax[0].text(*text_coords, f"r = {a1.round(3)}")
+            ax[0].text(*text_coords, f"r = {np.round(a1, 3)}")
     ax[0].fill_between(x_vec, theta_freq - theta_freq_std, theta_freq + theta_freq_std,
                        color="C0", alpha=0.2)  # plot theta error
 
@@ -677,8 +684,8 @@ c_list = ["pyr", "bic", "pv", "cck"]
 #     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'theta', 'power')["pyr"] /
 #     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'gamma', 'power')["pyr"]
 # )
-conn_file_num = 6
-n = 26
+conn_file_num = 8
+n = 18
 with open(f"search_results/search_results_conn_{conn_file_num}.json", "r") as f:
     conn_data = json.load(f)
 
@@ -722,11 +729,11 @@ plot_stim_theta_gamma("cck", num_pts, conns="default", stim_range=(-2, 2),
 
 plot_stim_v_freq("cck", num_pts, conns="default",
                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
-
+# plot_stim_v_freq("bic", num_pts, conns=new_conns,
+#                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
 # for ctype in c_list:
 #     plot_stim_v_freq(ctype, num_pts, conns="default",
-#                      sdir=f"set_0/set_0_stim_v_freq", stim_range=(-2, 2))
-#     print(f"Completed for {ctype} cell")
+#                      sdir=f"new_ref_set/ref_stim_v_freq", stim_range=(-2, 2))
 
 # plot_conn_v_theta_freq("pv", "pyr", num_pts, conns=new_conns,
 #                        sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_freq")

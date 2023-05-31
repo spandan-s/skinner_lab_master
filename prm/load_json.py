@@ -80,6 +80,10 @@ ref_conns = {
 c_list = {"pyr", "bic", "pv", "cck"}
 true_count, false_count = 0, 0
 
+# print(run_prm(conn_data_2[41], plot=True))
+
+# possible new sets: 7-1, 7-14, 7-25, 7-27*, 7-31, 7-32, 7-37, 7-41
+
 # for idx, conn in tqdm(enumerate(conn_data)):
 #     if hypothesis_test(conn):
 #         true_count += 1

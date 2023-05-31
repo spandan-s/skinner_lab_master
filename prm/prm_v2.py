@@ -322,18 +322,23 @@ def create_radar():
 
     return ax
 
-def plot_radar(in_conns, ax,
-               color=None, label=None, relative_to_ref=False):
+def plot_radar(in_conns, ax, mode="absolute", label=None, color=None):
     conns = deepcopy(in_conns)
     v = []
-    ref = PRM_v2()
-    v_ref = []
 
     for c in [*conns]:
         v.append([*conns[c].values()])
-        v_ref.append([*ref.conns[c].values()])
     v = np.array(v).reshape(16)
-    v_ref = np.array(v_ref).reshape(16)
+
+    if mode=="relative":
+        ref = PRM_v2()
+        ref_conns = deepcopy(ref.conns)
+        v_ref = []
+
+        for c in [*ref_conns]:
+            v_ref.append([*ref_conns[c].values()])
+        v_ref = np.array(v_ref).reshape(16)
+
     c_list = ["pyr", "bic", "pv", "cck"]
 
     conn_labels = []
@@ -344,24 +349,22 @@ def plot_radar(in_conns, ax,
     invalid = np.where(v == 0)
 
     v = np.delete(v, invalid)
-    v_ref = np.delete(v_ref, invalid)
+    if mode == "relative":
+        v_ref = np.delete(v_ref, invalid)
     conn_labels = np.delete(conn_labels, invalid)
 
     num_labels = len(conn_labels)
 
     angles = np.linspace(0, 2 * np.pi, num_labels, endpoint=False)
-    v = np.append(v, v[0])
-
     angles = np.append(angles, angles[0])
-    if relative_to_ref:
-        v_ref = np.append(v_ref, v_ref[0])
+    if mode=="absolute":
+        v = np.append(v, v[0])
+        v_plot = 10*abs(v)
+    elif mode=="relative":
         v_ratio = v/v_ref
-        ax.plot(angles, v_ratio, color=color, linewidth=0.5, label=label, alpha=0.8)
-        ax.fill(angles, v_ratio, color=color, alpha=0.5)
+        v_plot = np.append(v_ratio, v_ratio[0])
+        ax.set_ylim(0, 3)
 
-    else:
-        v = 10 * abs(v)
-        # Draw the outline of our data.
         ax.plot(angles, v, color=color, linewidth=0.5, label=label, alpha=0.8)
         # Fill it in.
         ax.fill(angles, v, color=color, alpha=0.5)
@@ -518,7 +521,7 @@ time = np.arange(0, T, dt)
 # h = 0
 # r_o = 30
 # ===============================================================
-# new_prm = PRM_v2()
+new_prm = PRM_v2()
 # #
 # for idx in new_prm.D:
 #     new_prm.D[idx] = 0.0
@@ -536,4 +539,14 @@ time = np.arange(0, T, dt)
 # ax = create_radar()
 # plot_radar(new_prm.conns)
 
-# plt.show()
+max_bic = np.max(new_prm.R['bic'])
+max_pv = np.max(new_prm.R['pv'])
+
+
+
+print(f"Max BiC Firing Rate: {max_bic}")
+print(f"Max PV Firing Rate: {max_pv}")
+print(f"PV-BiC ratio: {max_pv/max_bic}")
+
+
+plt.show()
