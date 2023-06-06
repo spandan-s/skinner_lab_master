@@ -1,5 +1,7 @@
 import json
 
+import numpy as np
+
 from prm_v2 import *
 
 
@@ -196,12 +198,22 @@ prm_0 = PRM_v2()
 #
 with open("search_results/search_results_conn_10.json", "r") as f:
     conn_data = np.array(json.load(f))
-l2_list = np.zeros(len(conn_data))
 
-for idx, conn in enumerate(conn_data):
-    l2_list[idx] = l2_ref(conn, ref_conns)
-# # # #
-clusters = k_means(conn_data, 13)
+# theta_base_power, gamma_base_power = [], []
+#
+# for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+#     theta, gamma = run_prm(conn_data[n])
+#     theta_base_power.append(theta[1])
+#     gamma_base_power.append(gamma[1])
+#
+# print(f"Mean theta power = {np.mean(theta_base_power)}")
+# print(f"Mean gamma power = {np.mean(gamma_base_power)}")
+# l2_list = np.zeros(len(conn_data))
+#
+# for idx, conn in enumerate(conn_data):
+#     l2_list[idx] = l2_ref(conn, ref_conns)
+# # # # #
+# clusters = k_means(conn_data, 13)
 # print(np.arange(len(conn_data))[clusters.labels_ == 2])
 
 # sse = []
@@ -248,27 +260,27 @@ clusters = k_means(conn_data, 13)
 # for i in range(len(conn_data)):
 #     plot_radar(conn_data[i], ax1, relative_to_ref=True, color=f"C{clusters.labels_[i]}")
 
-for idx in range(clusters.n_clusters):
-    val = np.arange(len(l2_list))[clusters.labels_ == idx][0]
+# for idx in range(clusters.n_clusters):
+#     val = np.arange(len(l2_list))[clusters.labels_ == idx][0]
 
     # with open("new_sets.txt", "a") as f:
     #     f.write(f"Conn 10-{val}\n")
     #     f.write(str(conn_data[val]))
     #     f.write("\n"+"="*60 + "\n")
 
-    new_prm = PRM_v2(conn_data[val])
-    new_prm.set_init_state(len(time))
-    new_prm = simulate(time, new_prm)
-
-    max_pv = np.max(new_prm.R["pv"][pst:])
-    max_bic = np.max(new_prm.R["bic"][pst:])
-    max_cck = np.max(new_prm.R["cck"][pst:])
-    print(f"Conn 10-{val}: ")
-    print(f"Max PV = {np.round(max_pv, 3)}")
-    print(f"Max BiC = {np.round(max_bic, 3)}")
-    print(f"Max CCK = {np.round(max_cck, 3)}")
-    print(f"PV-BiC ratio = {np.round(max_pv/max_bic, 3)}")
-    print(""*60)
+    # new_prm = PRM_v2(conn_data[val])
+    # new_prm.set_init_state(len(time))
+    # new_prm = simulate(time, new_prm)
+    #
+    # max_pv = np.max(new_prm.R["pv"][pst:])
+    # max_bic = np.max(new_prm.R["bic"][pst:])
+    # max_cck = np.max(new_prm.R["cck"][pst:])
+    # print(f"Conn 10-{val}: ")
+    # print(f"Max PV = {np.round(max_pv, 3)}")
+    # print(f"Max BiC = {np.round(max_bic, 3)}")
+    # print(f"Max CCK = {np.round(max_cck, 3)}")
+    # print(f"PV-BiC ratio = {np.round(max_pv/max_bic, 3)}")
+    # print(""*60)
     # print(run_prm(conn_data[val], plot=True))
     # plt.title(f"Conn 10-{val}")
     # plt.savefig(f"./figures/conn_10/activity_conn_10_{val}.png", dpi=300)
@@ -283,7 +295,7 @@ for idx in range(clusters.n_clusters):
 # with open("search_results/search_results_conn_7.json", "r") as f:
 #     conn_data = json.load(f)
 # for i in range(len(conn_data)):
-#     plot_radar(conn_data[i], ax1, relative_to_ref=True)
+#     plot_radar(conn_data[i], ax1, mode="absolute", color='black')
 
 # with open("search_results/search_results_conn_8.json", "r") as f:
 #     conn_data = json.load(f)
@@ -294,6 +306,6 @@ for idx in range(clusters.n_clusters):
 # plot_radar(conn_data[92], ax1, label=f"conn_7_92")
 
 # plt.legend()
-# ax1.set_ylim(0, 3.5)
+# ax1.set_ylim(0, 3)
 # plt.tight_layout()
-# plt.show()
+plt.show()

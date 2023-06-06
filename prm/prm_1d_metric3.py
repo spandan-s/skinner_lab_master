@@ -92,7 +92,9 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
     if exclude_invalid:
         ref_tpp, ref_gpp = ref_power()
 
-    save_name = f"stim_to_{cell}_cell_theta_gamma_2.png"
+    save_name = f"stim_to_{cell}_cell_theta_gamma_2"
+    save_ext_img = ".png"
+    save_ext_txt = ".dat"
 
     if plot_lpr:
         fig, ax = plt.subplots(nrows=2, sharex=True,
@@ -137,10 +139,14 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
         if plot_lpr:
             LPR[idx] = np.log10(theta[idx] / gamma[idx])
             if exclude_invalid:
-                if theta[idx] < (0.25 * ref_tpp) or gamma[idx] < (0.25 * ref_gpp):
+                if theta[idx] < 48 or gamma[idx] < 0.31:
                     LPR_valid[idx] = np.nan
                 else:
                     LPR_valid[idx] = LPR[idx]
+
+    save_arr = np.vstack([x_vec, theta, gamma, LPR]).T
+    np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr, header="stim, theta, gamma, LPR")
+
 
     # ==============================================================================
     # First subplot --> theta and gamma power vs stim
@@ -183,7 +189,7 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
 
     # ax.grid()
     plt.tight_layout()
-    # plt.savefig(f"./figures/{sdir}/{save_name}")
+    plt.savefig(f"./figures/{sdir}/{save_name}{save_ext_img}")
 
 
 def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default",
@@ -317,7 +323,9 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         ref_tpp, ref_gpp = ref_power()
         # print(ref_tpp, ref_gpp)
 
-    save_name = f"stim_to_{cell}_cell_theta_freq_exc.png"
+    save_name = f"stim_to_{cell}_cell_theta_freq_2"
+    save_ext_img = ".png"
+    save_ext_txt = ".dat"
 
     if plot_lpr:
         fig, ax = plt.subplots(nrows=2, sharex=True,
@@ -368,7 +376,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         if plot_lpr:
             LPR[idx] = np.log10(theta[idx] / gamma[idx])
             if exclude_invalid:
-                if theta[idx] < (0.25 * ref_tpp) or gamma[idx] < (0.25 * ref_gpp):
+                if theta[idx] < 48 or gamma[idx] < 0.31:
                     LPR_valid[idx] = np.nan
                     theta_freq_valid[idx] = np.nan
                     x_valid[idx] = np.nan
@@ -388,6 +396,8 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         print(f"Valid Stim Range: {np.min(x_valid).round(2), np.max(x_valid).round(2)}")
         print(f"Theta Frequency Range: {np.min(theta_freq_valid), np.max(theta_freq_valid)}")
 
+    save_arr = np.vstack([x_vec, theta, gamma, LPR]).T
+    np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr, header="stim, theta, gamma, LPR")
     # ==============================================================================
     # First subplot --> theta frequency vs stim
     p1, = ax[0].plot(x_vec, theta_freq,
@@ -429,7 +439,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
 
     # ax.grid()
     plt.tight_layout()
-    # plt.savefig(f"./figures/{sdir}/{save_name}")
+    plt.savefig(f"./figures/{sdir}/{save_name}{save_ext_img}")
 
 
 def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
@@ -684,12 +694,11 @@ c_list = ["pyr", "bic", "pv", "cck"]
 #     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'theta', 'power')["pyr"] /
 #     calc_spectral(P_ref.R, fs, time, P_ref.labels, 'gamma', 'power')["pyr"]
 # )
-conn_file_num = 8
-n = 18
+conn_file_num = 10
+
 with open(f"search_results/search_results_conn_{conn_file_num}.json", "r") as f:
     conn_data = json.load(f)
 
-new_conns = conn_data[n]
 # ===============================================================
 
 # cell type to look at
@@ -708,8 +717,8 @@ max_inputs = len(c_list)
 # plot_stim_theta_gamma(ctype, num_pts, conns=new_conns, stim_range=(-0.5, 0.5),
 #                       exclude_invalid=True, sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_theta_gamma_plots")
 
-plot_stim_theta_gamma("cck", num_pts, conns="default", stim_range=(-2, 2),
-                      exclude_invalid=True, sdir=f"new_ref_set/ref_theta_gamma_plots")
+# plot_stim_theta_gamma("cck", num_pts, conns="default", stim_range=(-2, 2),
+#                       exclude_invalid=True, sdir=f"new_ref_set/ref_theta_gamma_plots")
 
 # for ctype in c_list:
 #     plot_stim_theta_gamma(ctype, num_pts, conns="default",
@@ -727,8 +736,8 @@ plot_stim_theta_gamma("cck", num_pts, conns="default", stim_range=(-2, 2),
 #                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
 #     print(f"Completed for {ctype} cell")
 
-plot_stim_v_freq("cck", num_pts, conns="default",
-                     sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
+# plot_stim_v_freq("cck", num_pts, conns="default",
+#                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
 # plot_stim_v_freq("bic", num_pts, conns=new_conns,
 #                      sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq", stim_range=(-2, 2))
 # for ctype in c_list:
@@ -746,4 +755,29 @@ plot_stim_v_freq("cck", num_pts, conns="default",
 
 # plot_conn_v_theta_gamma("pv", "pyr", num_pts, conns=None,
 #                        sdir="new_ref_set/ref_conn_v_power")
-plt.show()
+
+# do all the things for a given connection set
+for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+    new_conns = conn_data[n]
+    try:
+        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/raw/")
+        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/raw/")
+    except FileExistsError:
+        pass
+
+    ax1 = create_radar()
+    plot_radar(new_conns, ax1, mode="relative")
+    plt.savefig(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conns_radar.png")
+
+    # for ctype in ["pyr"]:
+    #     plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
+    #                           exclude_invalid=True, stim_range=[-0.5, 0.5],
+    #                           sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power")
+    #     plot_stim_v_freq(ctype, num_pts, conns=new_conns,
+    #                           exclude_invalid=True, stim_range=[-0.5, 0.5],
+    #                           sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq")
+    #     print(f"Completed for {ctype} cell")
+    #
+    # print(f"Completed connection set 10-{n}")
+
+# plt.show()

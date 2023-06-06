@@ -363,11 +363,11 @@ def plot_radar(in_conns, ax, mode="absolute", label=None, color=None):
     elif mode=="relative":
         v_ratio = v/v_ref
         v_plot = np.append(v_ratio, v_ratio[0])
-        ax.set_ylim(0, 3)
+        # ax.set_ylim(0, 3)
 
-        ax.plot(angles, v, color=color, linewidth=0.5, label=label, alpha=0.8)
-        # Fill it in.
-        ax.fill(angles, v, color=color, alpha=0.5)
+    ax.plot(angles, v_plot, color=color, linewidth=0.2, label=label, alpha=0.3)
+    # Fill it in.
+    ax.fill(angles, v_plot, color=color, alpha=0.5)
 
 
 def plot_conns(in_conns, in_ref_conns = None):
