@@ -1,5 +1,6 @@
 import json
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from prm_v2 import *
@@ -11,6 +12,42 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
+def make_boxplot(conn_dict):
+    c_list = ["pyr", "bic", "pv", "cck"]
+
+    conn_arr = np.zeros((len(conn_dict), 9))
+    conn_labels = []
+    for c in c_list:
+        for c2 in c_list:
+            conn_labels.append(f"$w_{{{c.upper()} \\rightarrow {c2.upper()}}}$")
+
+    conn = conn_dict[0]
+    v = []
+    for c in [*conn]:
+        v.append([*conn[c].values()])
+    v = np.array(v).reshape(16)
+    invalid = np.where(v == 0)
+    conn_labels = np.delete(conn_labels, invalid)
+
+    for idx, conn in enumerate(conn_dict):
+        v = []
+        for c in [*conn]:
+            v.append([*conn[c].values()])
+        v = np.array(v).reshape(16)
+        v = np.delete(v, invalid)
+        conn_arr[idx] = v
+
+    stats = np.zeros((9, 2))
+
+    plt.figure(figsize=(18, 10), dpi=250)
+    plt.boxplot(conn_arr, labels=conn_labels)
+
+    for i in range(9):
+        stats[i] = [np.mean(conn_arr[:, i]), np.std(conn_arr[:, i])]
+        plt.text(i+0.75, 0.2,
+                 f"Mean: {np.round(stats[i, 0], 2)}\nSD: {np.round(stats[i, 1], 2)}")
+
+    plt.savefig("./figures/conn_10/boxplot_conn_10.png")
 def k_means(conn_data, k):
 
     features = np.zeros((len(conn_data), 16))
@@ -198,6 +235,8 @@ prm_0 = PRM_v2()
 #
 with open("search_results/search_results_conn_10.json", "r") as f:
     conn_data = np.array(json.load(f))
+
+make_boxplot(conn_data)
 
 # theta_base_power, gamma_base_power = [], []
 #

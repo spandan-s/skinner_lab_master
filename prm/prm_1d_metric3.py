@@ -757,17 +757,17 @@ max_inputs = len(c_list)
 #                        sdir="new_ref_set/ref_conn_v_power")
 
 # do all the things for a given connection set
-for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
-    new_conns = conn_data[n]
-    try:
-        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/raw/")
-        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/raw/")
-    except FileExistsError:
-        pass
-
-    ax1 = create_radar()
-    plot_radar(new_conns, ax1, mode="relative")
-    plt.savefig(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conns_radar.png")
+# for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+#     new_conns = conn_data[n]
+#     try:
+#         os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/raw/")
+#         os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/raw/")
+#     except FileExistsError:
+#         pass
+#
+#     ax1 = create_radar()
+#     plot_radar(new_conns, ax1, mode="relative")
+#     plt.savefig(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conns_radar.png")
 
     # for ctype in ["pyr"]:
     #     plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
