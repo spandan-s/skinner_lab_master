@@ -91,10 +91,10 @@ def f(u, beta=20, h=0):
 def simulate(time, P, dt=0.001, tau=5, stim=None):
     if stim == None:
         stim = {
-            "pyr": 0,
-            "bic": 0,
-            "pv": 0,
-            "cck": 0
+            "pyr": 0 + np.zeros_like(time),
+            "bic": 0 + np.zeros_like(time),
+            "pv": 0 + np.zeros_like(time),
+            "cck": 0 + np.zeros_like(time)
         }
     # euler_integrate
     for t in range(len(time) - 1):
@@ -102,7 +102,7 @@ def simulate(time, P, dt=0.001, tau=5, stim=None):
         for c1 in c_list:
             P.R[c1][t + 1] = P.R[c1][t] + dt * P.alpha[c1] * \
                              (-P.R[c1][t] + P.r_o[c1] * f(
-                                 sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1] + stim[c1])) + \
+                                 sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1] + stim[c1][t])) + \
                              np.sqrt(2 * P.alpha[c1] * P.D[c1] * dt) * np.random.normal(0, 1)
     return P
 
@@ -211,11 +211,13 @@ def calc_spectral(R, fs, time,
         return fm, power
 
 
-def plot_trace(time, R, labels):
+def plot_trace(time, R, labels, mode="pyr_only"):
     plot_start_time = 3 * time.size // 4
     plt.figure(figsize=[13, 8])
-
-    c_list = ["pyr", "bic", "cck", "pv"]
+    if mode == "pyr_only":
+        c_list = ["pyr"]
+    else:
+        c_list = ["pyr", "bic", "cck", "pv"]
     for c in c_list:
         plt.plot(time[plot_start_time:], R[c][plot_start_time:], label=labels[c])
 

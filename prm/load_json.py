@@ -236,12 +236,14 @@ prm_0 = PRM_v2()
 with open("search_results/search_results_conn_10.json", "r") as f:
     conn_data = np.array(json.load(f))
 
-make_boxplot(conn_data)
+# make_boxplot(conn_data)
 
 # theta_base_power, gamma_base_power = [], []
 #
-# for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
-#     theta, gamma = run_prm(conn_data[n])
+for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+    run_prm(conn_data[n], plot=True)
+    plt.ylim((0, 42))
+    plt.savefig(f"./figures/conn_10/pyr_activity/pyr_activity_10_{n}.png")
 #     theta_base_power.append(theta[1])
 #     gamma_base_power.append(gamma[1])
 #
