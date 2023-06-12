@@ -9,6 +9,8 @@ from prm_v2 import *
 
 with open("search_results/search_results_conn_10.json", "r") as f:
     conn_data = json.load(f)
+
+# run_prm(conn_data[2], stim={"pyr": 0, "bic": 0, 'cck': -0.5, "pv": 0}, plot=True)
 #
 # stim_range = (-2, 2)
 # num_pts = 61
@@ -30,8 +32,8 @@ with open("search_results/search_results_conn_10.json", "r") as f:
 #     plt.savefig(f"/home/spandans/skinner_lab_master/prm/figures/conn_8_0/bic_stim/bic_stim_{idx}.png")
 # ============================================================================
 n_stim = 20
-stim_arr = np.linspace(-0.5, 2.0, n_stim)
-stim_duration = 0.5
+stim_arr = np.linspace(-1, 0, n_stim)
+stim_duration = 1.25
 
 time_end = stim_duration * n_stim
 t_vec = np.arange(0, time_end, dt)
@@ -40,9 +42,12 @@ stim_vec = np.zeros_like(t_vec)
 for idx, val in enumerate(stim_arr):
     stim_vec[int(stim_duration/dt*idx):int(stim_duration/dt*(idx+1))] = val
 
+stim_vec[0:int(stim_duration/dt)] = 0
+
 # plt.plot(t_vec, stim_vec)
 # ============================================================================
-n = 7
+n = 0
+
 stim = {
     "pyr": np.zeros_like(t_vec),
     "bic": np.zeros_like(t_vec),
@@ -64,11 +69,15 @@ ax[0].set_ylabel("PYR Activity")
 
 ax[1].plot(t_vec, stim_vec)
 ax[1].grid(which='both', axis='both')
-ax[1].set_ylabel("Stim to PYR")
+ax[1].set_ylabel("Stim to CCK")
 
 ax[1].set_xlabel("Time [s]")
 fig.suptitle(f"Conn 10-{n}")
 
-plt.savefig(f"./figures/conn_10/cck_varstim/varstim_conn_10_{n}.png")
-# plt.show()
+plt.savefig("./figures/conn_10/tempfig.png")
+# plt.savefig(f"./figures/conn_10/bic_varstim/varstim_conn_10_{n}.png")
+# ============================================================================
+# print(run_prm(conn_data[0], plot=True))
+
+plt.show()
 

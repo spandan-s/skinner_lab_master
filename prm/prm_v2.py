@@ -250,6 +250,9 @@ def run_prm(conns=None, I=None, dt=0.001, T=8.0,
 
     time = np.arange(0, T, dt)
 
+    for c in ["pyr", "bic", "cck", "pv"]:
+        stim[c] += np.zeros_like(time)
+
     new_prm.set_init_state(len(time))
     new_prm = simulate(time, new_prm, stim=stim)
 
