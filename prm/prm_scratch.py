@@ -7,6 +7,55 @@ from tqdm import tqdm
 
 from prm_v2 import *
 
+def plot_varstim(conns, stim_cell, stim_range, n_stim, sname="tempfig.png"):
+    t_end = 1.0  # s
+    dt = 0.001  # s
+
+    t_vec_list = []  # list to store time vector for each stim
+    R_list = []  # list to store pyr activity for each stim
+
+    # create time vector list
+    t_vec = np.arange(0, t_end, dt)
+    for idx in range(n_stim):
+        t_vec_list.append(t_vec)
+
+    # create vector of stim values corresponding to each time vector
+    stim_arr = np.linspace(stim_range[0], stim_range[1], n_stim)
+
+    for idx in range(n_stim):
+        new_prm = PRM_v2(conns)
+        new_prm.set_init_state(len(t_vec))
+
+        stim = {"pyr": 0, "bic": 0, "cck": 0, "pv": 0}
+        stim[stim_cell] = stim_arr[idx]
+
+        for c in ["pyr", "bic", "cck", "pv"]:
+            stim[c] += np.zeros_like(t_vec)
+
+        new_prm = simulate(t_vec, new_prm, stim=stim)
+        R_list.append(new_prm.R["pyr"])
+
+    fig, ax = plt.subplots(sharex=True, figsize=[21, 9], dpi=250)
+    ax1 = ax.twinx()
+
+    for idx in range(n_stim):
+        ax.plot(t_vec_list[idx] + (idx * t_end), R_list[idx], color="C0")
+        ax1.plot(t_vec_list[idx] + (idx * t_end), stim_arr[idx] + np.zeros_like(t_vec), color='C1')
+
+    ax.set_xlabel('Time [s]')
+    ax.set_ylabel('PYR Activity')
+    ax1.set_ylabel(f'Stim to {stim_cell.upper()}')
+
+    ax.yaxis.label.set_color('C0')
+    ax1.yaxis.label.set_color('C1')
+
+    ax.tick_params(axis='y', colors='C0')
+    ax1.tick_params(axis='y', colors='C1')
+    ax.grid(axis='x')
+
+    plt.savefig(f"/home/spandans/skinner_lab_master/prm/figures/{sname}")
+    plt.close()
+
 with open("search_results/search_results_conn_10.json", "r") as f:
     conn_data = json.load(f)
 
