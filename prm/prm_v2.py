@@ -2,6 +2,7 @@ from copy import deepcopy
 
 import numpy as np
 from matplotlib import pyplot as plt
+from numpy.linalg import LinAlgError
 from scipy import signal
 from f_filter_lfp import filter_lfp
 
@@ -513,6 +514,42 @@ def find_pyr_power(R, fs, band="theta"):
     # plt.semilogy()
 
     return f_max, P_max
+
+def theta_freq_vs_gamma(sr, tf, tp, gp):
+    out_data = np.zeros((len(tf)-5, 2))
+    # print(tp)
+    # take five points for each point of stim range
+    for idx, val in enumerate(tf[2:-3]):
+        # print(idx)
+        tf_range = tf[idx-2:idx+3]
+        tp_range = tp[idx-2:idx+3]
+        gp_range = gp[idx-2:idx+3]
+        sr_range = sr[idx-2: idx+3]
+
+        # print(tp_range)
+
+        # check: is point valid? check theta and gamma power --> if 3 of 5 valid
+        valid = [False]*5
+        for jdx, vals in enumerate(zip(tp_range, gp_range)):
+            # print(vals)
+            if (vals[0] >= 48) and (vals[1] >= 0.31):
+                valid[jdx] = True
+
+        if sum(valid) >= 3:
+
+            # find slope of theta freq
+            try:
+                a1, a0 = np.polyfit(sr_range[valid], tf_range[valid], 1)
+            except LinAlgError:
+                a1, a0 = np.nan, np.nan
+
+            gp_mean = np.mean(gp_range[valid])
+            out_data[idx] = np.array([gp_mean, a1])
+
+        else:
+            out_data[idx] = np.array([np.nan, np.nan])
+
+    return out_data
 # =============================================================
 # Parameters
 T = 8.0  # total time (units in sec)

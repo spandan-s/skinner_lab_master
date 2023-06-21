@@ -396,8 +396,8 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         print(f"Valid Stim Range: {np.min(x_valid).round(2), np.max(x_valid).round(2)}")
         print(f"Theta Frequency Range: {np.min(theta_freq_valid), np.max(theta_freq_valid)}")
 
-    save_arr = np.vstack([x_vec, theta, gamma, LPR]).T
-    np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr, header="stim, theta, gamma, LPR")
+    save_arr = np.vstack([x_vec, theta_freq, theta, gamma, LPR]).T
+    np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr, header="stim, theta_freq, theta, gamma, LPR")
     # ==============================================================================
     # First subplot --> theta frequency vs stim
     p1, = ax[0].plot(x_vec, theta_freq,
@@ -704,7 +704,7 @@ with open(f"search_results/search_results_conn_{conn_file_num}.json", "r") as f:
 # cell type to look at
 ctype = "pyr"
 
-num_pts = 61  # number of points to plot
+num_pts = 121  # number of points to plot
 
 max_inputs = len(c_list)
 
@@ -757,27 +757,27 @@ max_inputs = len(c_list)
 #                        sdir="new_ref_set/ref_conn_v_power")
 
 # do all the things for a given connection set
-# for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
-#     new_conns = conn_data[n]
-#     try:
-#         os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/raw/")
-#         os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/raw/")
-#     except FileExistsError:
-#         pass
+for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+    new_conns = conn_data[n]
+    try:
+        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/raw/")
+        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/raw/")
+    except FileExistsError:
+        pass
 #
 #     ax1 = create_radar()
 #     plot_radar(new_conns, ax1, mode="relative")
 #     plt.savefig(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conns_radar.png")
 
-    # for ctype in ["pyr"]:
-    #     plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
-    #                           exclude_invalid=True, stim_range=[-0.5, 0.5],
-    #                           sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power")
-    #     plot_stim_v_freq(ctype, num_pts, conns=new_conns,
-    #                           exclude_invalid=True, stim_range=[-0.5, 0.5],
-    #                           sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq")
-    #     print(f"Completed for {ctype} cell")
-    #
-    # print(f"Completed connection set 10-{n}")
+    for ctype in ["pyr"]:
+        plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
+                              exclude_invalid=True, stim_range=[-0.5, 1.5],
+                              sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power")
+        plot_stim_v_freq(ctype, num_pts, conns=new_conns,
+                              exclude_invalid=True, stim_range=[-0.5, 1.5],
+                              sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq")
+        print(f"Completed for {ctype} cell")
+
+    print(f"Completed connection set 10-{n}")
 
 # plt.show()

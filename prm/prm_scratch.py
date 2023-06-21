@@ -31,53 +31,74 @@ with open("search_results/search_results_conn_10.json", "r") as f:
 #     plt.title(f"BiC STIM = {np.round(stim['bic'], 3)}")
 #     plt.savefig(f"/home/spandans/skinner_lab_master/prm/figures/conn_8_0/bic_stim/bic_stim_{idx}.png")
 # ============================================================================
-n_stim = 20
-stim_arr = np.linspace(-1, 0, n_stim)
-stim_duration = 1.25
-
-time_end = stim_duration * n_stim
-t_vec = np.arange(0, time_end, dt)
-stim_vec = np.zeros_like(t_vec)
-
-for idx, val in enumerate(stim_arr):
-    stim_vec[int(stim_duration/dt*idx):int(stim_duration/dt*(idx+1))] = val
-
-stim_vec[0:int(stim_duration/dt)] = 0
+# n_stim = 20
+# stim_arr = np.linspace(-1, 0, n_stim)
+# stim_duration = 1.25
+#
+# time_end = stim_duration * n_stim
+# t_vec = np.arange(0, time_end, dt)
+# stim_vec = np.zeros_like(t_vec)
+#
+# for idx, val in enumerate(stim_arr):
+#     stim_vec[int(stim_duration/dt*idx):int(stim_duration/dt*(idx+1))] = val
+#
+# stim_vec[0:int(stim_duration/dt)] = 0
 
 # plt.plot(t_vec, stim_vec)
 # ============================================================================
-n = 0
-
-stim = {
-    "pyr": np.zeros_like(t_vec),
-    "bic": np.zeros_like(t_vec),
-    "cck": np.zeros_like(t_vec),
-    "pv": np.zeros_like(t_vec),
-}
-
-stim["cck"] = stim_vec
-
-new_prm = PRM_v2(conns_dict=conn_data[n])
-new_prm.set_init_state(len(t_vec))
-
-new_prm = simulate(t_vec, new_prm, stim=stim)
-
-fig, ax = plt.subplots(2, sharex=True, figsize=[21, 9], dpi=400)
-ax[0].plot(t_vec, new_prm.R["pyr"])
-ax[0].grid(which='both', axis='x')
-ax[0].set_ylabel("PYR Activity")
-
-ax[1].plot(t_vec, stim_vec)
-ax[1].grid(which='both', axis='both')
-ax[1].set_ylabel("Stim to CCK")
-
-ax[1].set_xlabel("Time [s]")
-fig.suptitle(f"Conn 10-{n}")
-
-plt.savefig("./figures/conn_10/tempfig.png")
+# n = 0
+#
+# stim = {
+#     "pyr": np.zeros_like(t_vec),
+#     "bic": np.zeros_like(t_vec),
+#     "cck": np.zeros_like(t_vec),
+#     "pv": np.zeros_like(t_vec),
+# }
+#
+# stim["cck"] = stim_vec
+#
+# new_prm = PRM_v2(conns_dict=conn_data[n])
+# new_prm.set_init_state(len(t_vec))
+#
+# new_prm = simulate(t_vec, new_prm, stim=stim)
+#
+# fig, ax = plt.subplots(2, sharex=True, figsize=[21, 9], dpi=400)
+# ax[0].plot(t_vec, new_prm.R["pyr"])
+# ax[0].grid(which='both', axis='x')
+# ax[0].set_ylabel("PYR Activity")
+#
+# ax[1].plot(t_vec, stim_vec)
+# ax[1].grid(which='both', axis='both')
+# ax[1].set_ylabel("Stim to CCK")
+#
+# ax[1].set_xlabel("Time [s]")
+# fig.suptitle(f"Conn 10-{n}")
+#
+# plt.savefig("./figures/conn_10/tempfig.png")
 # plt.savefig(f"./figures/conn_10/bic_varstim/varstim_conn_10_{n}.png")
 # ============================================================================
-# print(run_prm(conn_data[0], plot=True))
+merged_DATA = np.array([[np.nan, np.nan]])
 
-plt.show()
+for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+    new_conns = conn_data[n]
+
+    DATA = np.loadtxt(
+        f"./figures/conn_10/conn_10_{n}/10_{n}_stim_v_freq/raw/stim_to_pyr_cell_theta_freq_2.dat",
+        skiprows=1)
+
+    DATA_out = theta_freq_vs_gamma(DATA[:, 0], DATA[:, 1], DATA[:, 2], DATA[:, 3])
+
+    plt.figure()
+    plt.plot(DATA_out[:, 0], DATA_out[:, 1], '.')
+    # merged_DATA = np.vstack((merged_DATA, DATA_out))
+    plt.xlabel("Mean Gamma Power")
+    plt.ylabel("Theta Freq increase with STIM")
+    plt.title(f"Conn 10-{n}")
+    plt.savefig(f"./figures/conn_10/theta_freq_v_gamma/conn_10_{n}.png")
+
+
+# plt.plot(merged_DATA[:, 0], merged_DATA[:, 1], '.')
+# plt.xlabel("Mean Gamma Power")
+# plt.ylabel("Theta Freq increase with STIM")
+# plt.show()
 
