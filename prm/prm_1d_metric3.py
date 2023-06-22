@@ -323,7 +323,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         ref_tpp, ref_gpp = ref_power()
         # print(ref_tpp, ref_gpp)
 
-    save_name = f"stim_to_{cell}_cell_theta_freq_2"
+    save_name = f"stim_to_cck_n025_{cell}_cell_theta_freq_{n_pts}"
     save_ext_img = ".png"
     save_ext_txt = ".dat"
 
@@ -353,7 +353,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         "pyr": 0,
         "bic": 0,
         "pv": 0,
-        "cck": 0
+        "cck": -0.25
     }
 
     for idx, val in tqdm(enumerate(x_vec)):
