@@ -1,8 +1,10 @@
 import json
-import os
 
-import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import scipy as sp
+import seaborn as sns
+import statsmodels.formula.api as smf
 
 from prm_v2 import *
 from sklearn.linear_model import LinearRegression
@@ -139,34 +141,61 @@ for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
         skiprows=1)
 
     DATA_out = theta_freq_vs_gamma(DATA[:, 0], DATA[:, 1], DATA[:, 2], DATA[:, 3])
+    x = DATA_out[:, 0][~np.isnan(DATA_out[:, 0])]
+    y = DATA_out[:, 1][~np.isnan(DATA_out[:, 1])]
+
+    df_DATA = pd.DataFrame(data=np.vstack((x, y)).T, columns=["X", "Y"])
+
+    # cor = sp.stats.pearsonr(DATA_out[:, 0], DATA_out[:, 1])[0]
+    try:
+        m = smf.ols('Y ~ X', df_DATA).fit()
+    except ValueError:
+        continue
+    a0, a1 = np.round(m.params.Intercept, 3), np.round(m.params.X, 3)
+
+    with open(f"./figures/conn_10/theta_freq_v_gamma/baseline/fit_stats/conn_10_{n}.csv", "w") as f:
+        f.write(m.summary().as_csv())
+    # print(m.summary())
+
+    # plt.figure(figsize=[12, 9], dpi=300)
+    ax = sns.lmplot(x="X", y="Y", data=df_DATA, ci=95)
+    ax.set(xlabel="Mean Gamma Power",
+           ylabel="Theta Freq increase vs STIM",
+           title=f"Conn 10-{n}")
+    plt.text(0.1*(max(df_DATA["X"] - min(df_DATA["X"]))) + min(df_DATA["X"]),
+            0.8*(max(df_DATA["Y"] - min(df_DATA["Y"]))) + min(df_DATA["Y"]),
+            f"y = {a0} + {a1}x\n"
+            f"$R^2$ = {np.round(m.rsquared, 3)}")
 
     # plt.figure()
     # plt.plot(DATA_out[:, 0], DATA_out[:, 1], '.', label=n)
-    merged_DATA = np.vstack((merged_DATA, DATA_out))
+    # merged_DATA = np.vstack((merged_DATA, DATA_out))
     # plt.xlabel("Mean Gamma Power")
     # plt.ylabel("Theta Freq increase with STIM")
     # plt.title(f"Conn 10-{n}")
     # plt.legend()
-    # plt.savefig(f"./figures/conn_10/theta_freq_v_gamma/cck_n025/conn_10_{n}.png")
+    plt.savefig(f"./figures/conn_10/theta_freq_v_gamma/baseline/fit/conn_10_{n}.png", dpi=300, bbox_inches='tight')
 # plt.savefig(f"./figures/conn_10/theta_freq_v_gamma/cck_n025/theta_freq_v_gamma.png")
 
 # for n in tqdm([0, 2, 3, 7, 8, 22, 38, 50, 103, 135]):
 #     plot_varstim(conn_data[n], "pv", [-1, 0.25], 21, sname=f"conn_10/pv_varstim_1/varstim_conn_10_{n}.png")
 
 
-x = merged_DATA[:, 0][~np.isnan(merged_DATA[:, 0])]
-y = merged_DATA[:, 1][~np.isnan(merged_DATA[:, 0])]
+# x = merged_DATA[:, 0][~np.isnan(merged_DATA[:, 0])]
+# y = merged_DATA[:, 1][~np.isnan(merged_DATA[:, 0])]
+
+
 
 # a1, a0 = np.polyfit(merged_DATA[:, 0], merged_DATA[:, 1], 1)
 
-lr = LinearRegression()
-lr.fit(x.reshape(-1, 1), y)
-a1, a0 = lr.coef_, lr.intercept_
-
-plt.plot(merged_DATA[:, 0], merged_DATA[:, 1], '.')
-plt.plot(merged_DATA[:, 0], a0 + a1*merged_DATA[:, 0], '--')
-plt.xlabel("Mean Gamma Power")
-plt.ylabel("Theta Freq increase with STIM")
-plt.savefig(f"./figures/conn_10/theta_freq_v_gamma/baseline/theta_freq_v_gamma.png")
-plt.show()
+# lr = LinearRegression()
+# lr.fit(x.reshape(-1, 1), y)
+# a1, a0 = lr.coef_, lr.intercept_
+#
+# plt.plot(merged_DATA[:, 0], merged_DATA[:, 1], '.')
+# plt.plot(merged_DATA[:, 0], a0 + a1*merged_DATA[:, 0], '--')
+# plt.xlabel("Mean Gamma Power")
+# plt.ylabel("Theta Freq increase with STIM")
+# plt.savefig(f"./figures/conn_10/theta_freq_v_gamma/baseline/theta_freq_v_gamma.png")
+# plt.show()
 
