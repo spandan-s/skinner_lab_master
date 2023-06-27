@@ -137,7 +137,7 @@ for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
     new_conns = conn_data[n]
 
     DATA = np.loadtxt(
-        f"./figures/conn_10/conn_10_{n}/10_{n}_stim_v_freq/raw/stim_to_pyr_cell_theta_freq_121.dat",
+        f"./figures/conn_10/conn_10_{n}/10_{n}_stim_v_freq/higher_res/raw/stim_to_pyr_cell_theta_freq_121.dat",
         skiprows=1)
 
     DATA_out = theta_freq_vs_gamma(DATA[:, 0], DATA[:, 1], DATA[:, 2], DATA[:, 3])
@@ -153,11 +153,11 @@ for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
         continue
     a0, a1 = np.round(m.params.Intercept, 3), np.round(m.params.X, 3)
 
-    with open(f"./figures/conn_10/theta_freq_v_gamma/baseline/fit_stats/conn_10_{n}.csv", "w") as f:
+    with open(f"./figures/conn_10/theta_freq_v_gamma_2/baseline/fit_stats/conn_10_{n}.csv", "w") as f:
         f.write(m.summary().as_csv())
     # print(m.summary())
 
-    # plt.figure(figsize=[12, 9], dpi=300)
+    plt.figure(figsize=[12, 9], dpi=300)
     ax = sns.lmplot(x="X", y="Y", data=df_DATA, ci=95)
     ax.set(xlabel="Mean Gamma Power",
            ylabel="Theta Freq increase vs STIM",
@@ -174,8 +174,10 @@ for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
     # plt.ylabel("Theta Freq increase with STIM")
     # plt.title(f"Conn 10-{n}")
     # plt.legend()
-    plt.savefig(f"./figures/conn_10/theta_freq_v_gamma/baseline/fit/conn_10_{n}.png", dpi=300, bbox_inches='tight')
-# plt.savefig(f"./figures/conn_10/theta_freq_v_gamma/cck_n025/theta_freq_v_gamma.png")
+    # plt.savefig(f"./figures/conn_10/theta_freq_v_gamma_2/baseline/conn_10_{n}.png", dpi=300, bbox_inches='tight')
+
+    plt.savefig(f"./figures/conn_10/theta_freq_v_gamma_2/baseline/fit/conn_10_{n}.png", dpi=300, bbox_inches='tight')
+# plt.savefig(f"./figures/conn_10/theta_freq_v_gamma_2/baseline/theta_freq_v_gamma.png")
 
 # for n in tqdm([0, 2, 3, 7, 8, 22, 38, 50, 103, 135]):
 #     plot_varstim(conn_data[n], "pv", [-1, 0.25], 21, sname=f"conn_10/pv_varstim_1/varstim_conn_10_{n}.png")

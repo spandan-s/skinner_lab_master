@@ -106,16 +106,22 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
         ax1 = ax.twinx()
 
     P = PRM_v2(new_conns, new_I)
-    x_vec = np.linspace(stim_range[0], stim_range[1], num_pts)
+    # x_vec = np.linspace(stim_range[0], stim_range[1], num_pts)
+    x_vec = np.arange(stim_range[0], stim_range[1], 0.005)
+    # theta = np.zeros(n_pts)
+    # gamma = np.zeros(n_pts)
+    # theta_std = np.zeros(n_pts)
+    # gamma_std = np.zeros(n_pts)
 
-    theta = np.zeros(n_pts)
-    gamma = np.zeros(n_pts)
-    theta_std = np.zeros(n_pts)
-    gamma_std = np.zeros(n_pts)
-
+    theta = np.zeros_like(x_vec)
+    gamma = np.zeros_like(x_vec)
+    theta_std = np.zeros_like(x_vec)
+    gamma_std = np.zeros_like(x_vec)
     if plot_lpr:
-        LPR = np.zeros(n_pts)
-        LPR_valid = np.zeros(n_pts)
+        # LPR = np.zeros(n_pts)
+        # LPR_valid = np.zeros(n_pts)
+        LPR = np.zeros_like(x_vec)
+        LPR_valid = np.zeros_like(x_vec)
 
     stim = {
         "pyr": 0,
@@ -323,7 +329,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         ref_tpp, ref_gpp = ref_power()
         # print(ref_tpp, ref_gpp)
 
-    save_name = f"stim_to_cck_n025_{cell}_cell_theta_freq_{n_pts}"
+    save_name = f"stim_to_{cell}_cell_theta_freq_{n_pts}"
     save_ext_img = ".png"
     save_ext_txt = ".dat"
 
@@ -333,27 +339,27 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
     else:
         fig, ax = plt.subplots(figsize=[9, 3], dpi=250)
 
-    x_vec = np.linspace(stim_range[0], stim_range[1], num_pts)
+    x_vec = np.arange(stim_range[0], stim_range[1], 0.005)
     x_valid = x_vec.copy()
 
-    theta = np.zeros(n_pts)
-    gamma = np.zeros(n_pts)
-    theta_std = np.zeros(n_pts)
-    gamma_std = np.zeros(n_pts)
+    theta = np.zeros_like(x_vec)
+    gamma = np.zeros_like(x_vec)
+    theta_std = np.zeros_like(x_vec)
+    gamma_std = np.zeros_like(x_vec)
 
-    theta_freq = np.zeros(n_pts)
+    theta_freq = np.zeros_like(x_vec)
     theta_freq_valid = np.zeros_like(theta_freq)
-    theta_freq_std = np.zeros(n_pts)
+    theta_freq_std = np.zeros_like(x_vec)
 
     if plot_lpr:
-        LPR = np.zeros(n_pts)
-        LPR_valid = np.zeros(n_pts)
+        LPR = np.zeros_like(x_vec)
+        LPR_valid = np.zeros_like(x_vec)
 
     stim = {
         "pyr": 0,
         "bic": 0,
         "pv": 0,
-        "cck": -0.25
+        "cck": 0
     }
 
     for idx, val in tqdm(enumerate(x_vec)):
@@ -669,10 +675,10 @@ fs = 1 / dt
 time = np.arange(0, T, dt)
 
 # FI curve
-beta = 10
-tau = 5
-h = 0
-r_o = 30
+# beta = 10
+# tau = 5
+# h = 0
+# r_o = 30
 
 c_list = ["pyr", "bic", "pv", "cck"]
 # ===============================================================
@@ -757,11 +763,13 @@ max_inputs = len(c_list)
 #                        sdir="new_ref_set/ref_conn_v_power")
 
 # do all the things for a given connection set
-for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+for n in [135]: #[0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
     new_conns = conn_data[n]
     try:
-        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/raw/")
-        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/raw/")
+        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/"
+                    f"higher_res/raw/")
+        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/"
+                    f"higher_res/raw/")
     except FileExistsError:
         pass
 #
@@ -771,11 +779,13 @@ for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
 
     for ctype in ["pyr"]:
         plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
-                              exclude_invalid=True, stim_range=[-0.5, 1.5],
-                              sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power")
+                              exclude_invalid=True, stim_range=[-0.05, 0.2],
+                              sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/"
+                                   f"higher_res/")
         plot_stim_v_freq(ctype, num_pts, conns=new_conns,
-                              exclude_invalid=True, stim_range=[-0.5, 1.5],
-                              sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq")
+                              exclude_invalid=True, stim_range=[-0.05, 0.2],
+                              sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/"
+                                   f"higher_res/")
         print(f"Completed for {ctype} cell")
 
     print(f"Completed connection set 10-{n}")

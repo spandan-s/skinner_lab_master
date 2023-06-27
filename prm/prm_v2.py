@@ -1,9 +1,12 @@
 from copy import deepcopy
 
 import numpy as np
+import sympy
 from matplotlib import pyplot as plt
 from numpy.linalg import LinAlgError
 from scipy import signal
+from sympy import Symbol, symbols, nsolve
+
 from f_filter_lfp import filter_lfp
 
 
@@ -87,6 +90,9 @@ class PRM_v2:
 
 def f(u, beta=20, h=0):
     return 1 / (1 + np.exp(-beta * (u - h)))
+
+def f_sp(u, beta=20, h=0):
+    return 1 / (1 + sympy.exp(-beta * (u - h)))
 
 
 def simulate(time, P, dt=0.001, tau=5, stim=None):
@@ -600,3 +606,23 @@ time = np.arange(0, T, dt)
 
 
 # plt.show()
+# ============================================================
+def equilibrPRM(prm, S=None):
+    if S == None:
+        S = {'pyr': 0, 'bic': 0, 'pv': 0, 'cck': 0}
+    w = prm.conns
+    i = prm.I
+    x1, x2, x3, x4 = symbols('x(1:5)')
+
+    eqs = [-x1 + prm.r_o["pyr"]*f_sp(w['pyr']['pyr']*x1 + w['bic']['pyr']*x2 + w['pv']['pyr']*x4 + i['pyr'] + S['pyr']),
+           -x2 + prm.r_o['bic']*f_sp(w['pyr']['bic']*x1 + i['bic'] + S['bic']),
+           -x3 + prm.r_o['cck']*f_sp(w['cck']['cck']*x3 + w['pv']['cck']*x4 + i['cck'] + S['cck']),
+           -x4 + prm.r_o['pv']*f_sp(w['cck']['pv']*x3 + w['pv']['pv']*x4 + w['pyr']['pv']*x1 + i['pv'] + S['pv'])]
+
+    xStar = nsolve(eqs, [x1, x2, x3, x4], [-1]*4)
+
+    return xStar
+
+new_prm = PRM_v2()
+
+print(equilibrPRM(new_prm))
