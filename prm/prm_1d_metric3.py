@@ -2,6 +2,7 @@ import json
 import os
 from copy import deepcopy
 
+import pandas as pd
 from numpy.linalg import LinAlgError
 from tqdm import tqdm
 
@@ -84,7 +85,7 @@ def plot_stim(cell, n_pts=40, ref=None, conns="default", I="default", exclude_in
 
 
 def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
-                          n_trials=1,
+                          n_trials=1, run_type='baseline',
                           plot_lpr=True, exclude_invalid=True, stim_range=(-2, 2), sdir=""):
     new_conns = deepcopy(conns)
     new_I = deepcopy(I)
@@ -129,6 +130,10 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
         "pv": 0,
         "cck": 0
     }
+    if run_type != 'baseline':
+        cell_type, s = run_type.split('_')
+        s_val = float('0.' + s.split('n')[-1].split('0')[-1]) * (1 if s.split('n')[0] else -1)
+        stim[cell_type] = s_val
 
     for idx, val in tqdm(enumerate(x_vec)):
         stim[cell] = val
@@ -320,6 +325,7 @@ def plot_1d(cell, max_in, n_pts=40, ref=None, conns="default", I="default",
 
 def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
                      stim_range=(-2, 2), n_trials=1,
+                     run_type='baseline',
                      plot_lpr=True, exclude_invalid=True, draw_fit=True, sdir=""):
     # draw_fit = False  # override
     new_conns = deepcopy(conns)
@@ -329,7 +335,7 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         ref_tpp, ref_gpp = ref_power()
         # print(ref_tpp, ref_gpp)
 
-    save_name = f"stim_to_{cell}_cell_theta_freq_{n_pts}"
+    save_name = f"stim_to_{run_type}_{cell}_cell_theta_freq_{n_pts}"
     save_ext_img = ".png"
     save_ext_txt = ".dat"
 
@@ -361,6 +367,10 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
         "pv": 0,
         "cck": 0
     }
+    if run_type != 'baseline':
+        cell_type, s = run_type.split('_')
+        s_val = float('0.' + s.split('n')[-1].split('0')[-1]) * (1 if s.split('n')[0] else -1)
+        stim[cell_type] = s_val
 
     for idx, val in tqdm(enumerate(x_vec)):
         stim[cell] = val
@@ -762,8 +772,13 @@ max_inputs = len(c_list)
 # plot_conn_v_theta_gamma("pv", "pyr", num_pts, conns=None,
 #                        sdir="new_ref_set/ref_conn_v_power")
 
+DATA = pd.read_csv("/home/spandans/skinner_lab_master/prm/freq_ranges_pyr_stim.csv", index_col=0)
+DATA = DATA.applymap(lambda x: np.array(str(x).split(','), dtype='float32'))
+
 # do all the things for a given connection set
-for n in [135]: #[0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+# for n in [135]: #[0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+for conn in DATA.index:
+    n = int(conn.split('_')[-1])
     new_conns = conn_data[n]
     try:
         os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/"
@@ -776,14 +791,14 @@ for n in [135]: #[0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
 #     ax1 = create_radar()
 #     plot_radar(new_conns, ax1, mode="relative")
 #     plt.savefig(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conns_radar.png")
-
+    run = 'pv_025'
     for ctype in ["pyr"]:
-        plot_stim_theta_gamma(ctype, num_pts, conns=new_conns,
-                              exclude_invalid=True, stim_range=[-0.05, 0.2],
+        plot_stim_theta_gamma(ctype, num_pts, conns=new_conns, run_type=run,
+                              exclude_invalid=True, stim_range=DATA.loc[conn][run],
                               sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/"
                                    f"higher_res/")
-        plot_stim_v_freq(ctype, num_pts, conns=new_conns,
-                              exclude_invalid=True, stim_range=[-0.05, 0.2],
+        plot_stim_v_freq(ctype, num_pts, conns=new_conns, run_type=run,
+                              exclude_invalid=True, stim_range=DATA.loc[conn][run],
                               sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/"
                                    f"higher_res/")
         print(f"Completed for {ctype} cell")

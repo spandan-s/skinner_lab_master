@@ -623,6 +623,6 @@ def equilibrPRM(prm, S=None):
 
     return xStar
 
-new_prm = PRM_v2()
+# new_prm = PRM_v2()
 
-print(equilibrPRM(new_prm))
+# print(equilibrPRM(new_prm))
