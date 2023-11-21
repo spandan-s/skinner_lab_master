@@ -47,7 +47,7 @@ def save_channels(acq_file, ch1, ch2, sdir, extension='.dat'):
 
             np.savetxt(f"./Subject_2/channel_{channel + 1}{extension}", save_data)
 
-path_in = '/media/spandans/Transcend/TBI/first group/'
+path_in = '/media/spandans/One Touch/2B100, 103, 107/'
 path_out = '/home/spandans/Documents/'
 
 files = sorted(file for file in os.listdir(path_in) if file.endswith('.acq'))

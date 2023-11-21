@@ -64,6 +64,23 @@ def plot_varstim(conns, stim_cell, stim_range, n_stim, sname="tempfig.png"):
 with open("search_results/search_results_conn_10.json", "r") as f:
     conn_data = json.load(f)
 
+stim = {'pyr': 0, 'bic': 0, 'pv': 0, 'cck': 0}
+for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+    test_prm = PRM_v2(conn_data[n])
+
+    # test_prm.set_init_state(len(time))
+    # test_prm = simulate(time, test_prm)
+    # pbr = pv_bic_ratio(test_prm.R)
+    # max_cck = np.max(test_prm.R["cck"][int(fs):])
+    print(f"Conn 10-{n}")
+    for c1 in test_prm.conns:
+        for c2 in test_prm.conns[c1]:
+            if test_prm.conns[c1][c2] != 0:
+                print(c1, c2, test_prm.conns[c1][c2])
+    # print(f"PV-BiC Ratio = {pbr.round(3)}")
+    # print(f"Max CCK = {max_cck.round(3)}")
+    print('='*60+'\n')
+
 # run_prm(conn_data[2], stim={"pyr": 0, "bic": 0, 'cck': -0.5, "pv": 0}, plot=True)
 #
 # stim_range = (-2, 2)
@@ -131,52 +148,52 @@ with open("search_results/search_results_conn_10.json", "r") as f:
 # plt.savefig("./figures/conn_10/tempfig.png")
 # plt.savefig(f"./figures/conn_10/bic_varstim/varstim_conn_10_{n}.png")
 # ============================================================================
-merged_DATA = np.array([[np.nan, np.nan]])
-
-for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
-    new_conns = conn_data[n]
-
-    DATA = np.loadtxt(
-        f"./figures/conn_10/conn_10_{n}/10_{n}_stim_v_freq/higher_res/raw/stim_to_pv_025_pyr_cell_theta_freq_121.dat",
-        skiprows=1)
-
-    DATA_out = theta_freq_vs_gamma(DATA[:, 0], DATA[:, 1], DATA[:, 2], DATA[:, 3])
-    x = DATA_out[:, 0][~np.isnan(DATA_out[:, 0])]
-    y = DATA_out[:, 1][~np.isnan(DATA_out[:, 1])]
-
-    df_DATA = pd.DataFrame(data=np.vstack((x, y)).T, columns=["X", "Y"])
-
-    # cor = sp.stats.pearsonr(DATA_out[:, 0], DATA_out[:, 1])[0]
-    try:
-        m = smf.ols('Y ~ X', df_DATA).fit()
-    except ValueError:
-        continue
-    a0, a1 = np.round(m.params.Intercept, 3), np.round(m.params.X, 3)
-
-    with open(f"./figures/conn_10/theta_freq_v_gamma_2/pv_025/fit_stats/conn_10_{n}.csv", "w") as f:
-        f.write(m.summary().as_csv())
-    # print(m.summary())
-
-    plt.figure(figsize=[12, 9], dpi=300)
-    ax = sns.lmplot(x="X", y="Y", data=df_DATA, ci=95)
-    ax.set(xlabel="Mean Gamma Power",
-           ylabel="Theta Freq increase vs STIM",
-           title=f"Conn 10-{n}")
-    plt.text(0.1*(max(df_DATA["X"] - min(df_DATA["X"]))) + min(df_DATA["X"]),
-            0.8*(max(df_DATA["Y"] - min(df_DATA["Y"]))) + min(df_DATA["Y"]),
-            f"y = {a0} + {a1}x\n"
-            f"$R^2$ = {np.round(m.rsquared, 3)}")
-
-    # plt.figure()
-    # plt.plot(DATA_out[:, 0], DATA_out[:, 1], '.', label=n)
-    # merged_DATA = np.vstack((merged_DATA, DATA_out))
-    # plt.xlabel("Mean Gamma Power")
-    # plt.ylabel("Theta Freq increase with STIM")
-    # plt.title(f"Conn 10-{n}")
-    # plt.legend()
-    # plt.savefig(f"./figures/conn_10/theta_freq_v_gamma_2/baseline/conn_10_{n}.png", dpi=300, bbox_inches='tight')
-
-    plt.savefig(f"./figures/conn_10/theta_freq_v_gamma_2/pv_025/fit/conn_10_{n}.png", dpi=300, bbox_inches='tight')
+# merged_DATA = np.array([[np.nan, np.nan]])
+#
+# for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+#     new_conns = conn_data[n]
+#
+#     DATA = np.loadtxt(
+#         f"./figures/conn_10/conn_10_{n}/10_{n}_stim_v_freq/higher_res/raw/stim_to_pv_025_pyr_cell_theta_freq_121.dat",
+#         skiprows=1)
+#
+#     DATA_out = theta_freq_vs_gamma(DATA[:, 0], DATA[:, 1], DATA[:, 2], DATA[:, 3])
+#     x = DATA_out[:, 0][~np.isnan(DATA_out[:, 0])]
+#     y = DATA_out[:, 1][~np.isnan(DATA_out[:, 1])]
+#
+#     df_DATA = pd.DataFrame(data=np.vstack((x, y)).T, columns=["X", "Y"])
+#
+#     # cor = sp.stats.pearsonr(DATA_out[:, 0], DATA_out[:, 1])[0]
+#     try:
+#         m = smf.ols('Y ~ X', df_DATA).fit()
+#     except ValueError:
+#         continue
+#     a0, a1 = np.round(m.params.Intercept, 3), np.round(m.params.X, 3)
+#
+#     with open(f"./figures/conn_10/theta_freq_v_gamma_2/pv_025/fit_stats/conn_10_{n}.csv", "w") as f:
+#         f.write(m.summary().as_csv())
+#     # print(m.summary())
+#
+#     plt.figure(figsize=[12, 9], dpi=300)
+#     ax = sns.lmplot(x="X", y="Y", data=df_DATA, ci=95)
+#     ax.set(xlabel="Mean Gamma Power",
+#            ylabel="Theta Freq increase vs STIM",
+#            title=f"Conn 10-{n}")
+#     plt.text(0.1*(max(df_DATA["X"] - min(df_DATA["X"]))) + min(df_DATA["X"]),
+#             0.8*(max(df_DATA["Y"] - min(df_DATA["Y"]))) + min(df_DATA["Y"]),
+#             f"y = {a0} + {a1}x\n"
+#             f"$R^2$ = {np.round(m.rsquared, 3)}")
+#
+#     # plt.figure()
+#     # plt.plot(DATA_out[:, 0], DATA_out[:, 1], '.', label=n)
+#     # merged_DATA = np.vstack((merged_DATA, DATA_out))
+#     # plt.xlabel("Mean Gamma Power")
+#     # plt.ylabel("Theta Freq increase with STIM")
+#     # plt.title(f"Conn 10-{n}")
+#     # plt.legend()
+#     # plt.savefig(f"./figures/conn_10/theta_freq_v_gamma_2/baseline/conn_10_{n}.png", dpi=300, bbox_inches='tight')
+#
+#     plt.savefig(f"./figures/conn_10/theta_freq_v_gamma_2/pv_025/fit/conn_10_{n}.png", dpi=300, bbox_inches='tight')
 # plt.savefig(f"./figures/conn_10/theta_freq_v_gamma_2/baseline/theta_freq_v_gamma.png")
 
 # for n in tqdm([0, 2, 3, 7, 8, 22, 38, 50, 103, 135]):

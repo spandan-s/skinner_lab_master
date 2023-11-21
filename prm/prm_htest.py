@@ -35,15 +35,24 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
     test_prm = simulate(time, test_prm, dt, tau)
     if plot:
         plot_layout = [
+            ["master"]*2,
             ["top"]*2,
             ["midL", "midR"],
             ["botL", "botR"]
         ]
 
-        fig, ax = plt.subplot_mosaic(plot_layout)
+        fig, ax = plt.subplot_mosaic(plot_layout, figsize=[12, 16])
+        for ctype in ["pyr", 'bic', 'cck', 'pv']:
+            ax["master"].plot(time[7 * len(time)//8:], test_prm.R[ctype][7 * len(time)//8:],
+                              label=test_prm.labels[ctype])
+            ax["master"].legend(loc=1)
+        # ax["master"].set_xlabel("Time")
+        ax["master"].set_ylabel("Activity [au]")
 
-        ax["top"].plot(time[3 * len(time)//4:], test_prm.R["pyr"][3 * len(time)//4:])
-        ax["top"].set_title("Primary Hypothesis")
+        ax["top"].plot(time[7 * len(time)//8:], test_prm.R["pyr"][7 * len(time)//8:])
+        # ax["top"].set_title("$PYR$ Cell Activity")
+        ax["top"].set_xlabel("Time [s]")
+        ax["top"].set_ylabel("$PYR$ Activity [au]")
 
     # Check if it satisfies primary hypothesis
     #   Has theta power >= 50% of default parameter set (DPS)
@@ -68,8 +77,16 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
         test_prm.set_init_state(len(time))
         test_prm = simulate(time, test_prm, dt, tau)
         if plot:
-            ax["midL"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
-            ax["midL"].set_title("Removed $PYR \\rightarrow PYR$ connections")
+            # ax["midL"].plot(time[7 * len(time) // 8:], test_prm.R["pyr"][7 * len(time) // 8:])
+            for ctype in ["pyr", 'bic', 'cck', 'pv']:
+                ax["midL"].plot(time[7 * len(time) // 8:], test_prm.R[ctype][7 * len(time) // 8:],
+                                  label=test_prm.labels[ctype])
+                # ax["midL"].legend()
+            ax["midL"].set_xticklabels([])
+            # ax["midL"].set_title("Removed $PYR \\rightarrow PYR$ connections")
+            # ax["midL"].set_xlabel("Time")
+            ax["midL"].set_ylabel("Activity [au]")
+
         pH1 = find_pyr_power(test_prm.R, fs, "theta")[1]
         if pH1 <= 0.15 * dps_tpp:
             h_test[1] = True
@@ -82,8 +99,15 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
             test_prm.set_init_state(len(time))
             test_prm = simulate(time, test_prm, dt, tau)
             if plot:
-                ax["midR"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
-                ax["midR"].set_title("Removed $CCK \\rightarrow PV$ connections")
+                # ax["midR"].plot(time[7 * len(time) // 8:], test_prm.R["pyr"][7 * len(time) // 8:])
+                for ctype in ["pyr", 'bic', 'cck', 'pv']:
+                    ax["midR"].plot(time[7 * len(time) // 8:], test_prm.R[ctype][7 * len(time) // 8:],
+                                      label=test_prm.labels[ctype])
+                    # ax["midR"].legend()
+                ax["midR"].set_xticklabels([])
+                # ax["midR"].set_title("Removed $CCK \\rightarrow PV$ connections")
+                # ax["midR"].set_xlabel("Time")
+                ax["midR"].set_ylabel("Activity [au]")
 
             pH2 = find_pyr_power(test_prm.R, fs, "theta")[1]
             if pH2 <= 0.15 * dps_tpp:
@@ -97,8 +121,14 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                 test_prm.set_init_state(len(time))
                 test_prm = simulate(time, test_prm, dt, tau)
                 if plot:
-                    ax["botL"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
-                    ax["botL"].set_title("Removed $PV \\rightarrow PYR$ connections")
+                    # ax["botL"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
+                    for ctype in ["pyr", 'bic', 'cck', 'pv']:
+                        ax["botL"].plot(time[7 * len(time) // 8:], test_prm.R[ctype][7 * len(time) // 8:],
+                                          label=test_prm.labels[ctype])
+                        # ax["botL"].legend()
+                    # ax["botL"].set_title("Removed $PV \\rightarrow PYR$ connections")
+                    ax["botL"].set_xlabel("Time [s]")
+                    ax["botL"].set_ylabel("Activity [au]")
 
                 pH3 = find_pyr_power(test_prm.R, fs, "theta")[1]
                 if pH3 <= 0.15 * dps_tpp:
@@ -112,8 +142,14 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                     test_prm.set_init_state(len(time))
                     test_prm = simulate(time, test_prm, dt, tau)
                     if plot:
-                        ax["botR"].plot(time[3 * len(time) // 4:], test_prm.R["pyr"][3 * len(time) // 4:])
-                        ax["botR"].set_title("Removed $BiC \\rightarrow PYR$ connections")
+                        # ax["botR"].plot(time[7 * len(time) // 8:], test_prm.R["pyr"][7 * len(time) // 8:])
+                        for ctype in ["pyr", 'bic', 'cck', 'pv']:
+                            ax["botR"].plot(time[7 * len(time) // 8:], test_prm.R[ctype][7 * len(time) // 8:],
+                                              label=test_prm.labels[ctype])
+                            # ax["botR"].legend()
+                        # ax["botR"].set_title("Removed $BiC \\rightarrow PYR$ connections")
+                        ax["botR"].set_xlabel("Time [s]")
+                        ax["botR"].set_ylabel("Activity [au]")
 
                     pH4 = find_pyr_power(test_prm.R, fs, "theta")[1]
                     if pH4 <= 0.15 * dps_tpp:
@@ -143,7 +179,7 @@ dt = 0.001  # plotting and Euler timestep (parameters adjusted accordingly)
 fs = 1 / dt
 
 # FI curve
-beta = 10
+beta = 20
 tau = 5
 h = 0
 # r_o = 30

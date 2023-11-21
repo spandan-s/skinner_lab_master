@@ -158,7 +158,6 @@ def plot_stim_theta_gamma(cell, n_pts=40, conns="default", I="default",
     save_arr = np.vstack([x_vec, theta, gamma, LPR]).T
     np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr, header="stim, theta, gamma, LPR")
 
-
     # ==============================================================================
     # First subplot --> theta and gamma power vs stim
     p1, = ax[0].plot(x_vec, theta,
@@ -408,12 +407,13 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
             print(a1, a0)
         except LinAlgError:
             a1, a0 = np.nan, np.nan
-        text_coords = (stim_range[0] + 0.1*(stim_range[1] - stim_range[0]), max(theta_freq))
+        text_coords = (stim_range[0] + 0.1 * (stim_range[1] - stim_range[0]), max(theta_freq))
         print(f"Valid Stim Range: {np.min(x_valid).round(2), np.max(x_valid).round(2)}")
         print(f"Theta Frequency Range: {np.min(theta_freq_valid), np.max(theta_freq_valid)}")
 
     save_arr = np.vstack([x_vec, theta_freq, theta, gamma, LPR]).T
-    np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr, header="stim, theta_freq, theta, gamma, LPR")
+    np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr,
+               header="stim, theta_freq, theta, gamma, LPR")
     # ==============================================================================
     # First subplot --> theta frequency vs stim
     p1, = ax[0].plot(x_vec, theta_freq,
@@ -458,9 +458,59 @@ def plot_stim_v_freq(cell, n_pts=40, conns="default", I="default",
     plt.savefig(f"./figures/{sdir}/{save_name}{save_ext_img}")
 
 
+# def conn_freq_power(conn1, conn2, n_pts=121,
+#                     conns="default", I="default",
+#                     conn_range=[0.5, 1.5], n_trials=1, sdir=""):
+#     if conns == "default":
+#         P = PRM_v2()
+#         new_conns = deepcopy(P.conns)
+#     else:
+#         new_conns = deepcopy(conns)
+#
+#     if I == "default":
+#         P = PRM_v2()
+#         new_I = deepcopy(P.I)
+#     else:
+#         new_I = deepcopy(I)
+#
+#     save_name = f"w_{conn1}{conn2}_theta_freq_power_{n_pts}"
+#     save_ext_img = ".png"
+#     save_ext_txt = ".dat"
+#
+#     x_vec = np.linspace(conn_range[0], conn_range[1], num_pts)
+#     p_vec = x_vec * new_conns[conn1][conn2]
+#
+#     theta = np.zeros(n_pts)
+#     gamma = np.zeros(n_pts)
+#     theta_std = np.zeros(n_pts)
+#     gamma_std = np.zeros(n_pts)
+#
+#     theta_freq = np.zeros(n_pts)
+#     theta_freq_std = np.zeros(n_pts)
+#
+#     for idx, val in tqdm(enumerate(p_vec)):
+#         new_conns[conn1][conn2] = val
+#         temp_theta, temp_gamma = np.zeros((5, 2)), np.zeros((5, 2))
+#
+#         for j in range(n_trials):
+#             temp_theta[j], temp_gamma[j] = run_prm(conns=new_conns, I=new_I)
+#
+#         theta[idx] = np.mean(temp_theta[:, 1])
+#         theta_std[idx] = np.std(temp_theta[:, 1])
+#         gamma[idx] = np.mean(temp_gamma[:, 1])
+#         gamma_std[idx] = np.std(temp_gamma[:, 1])
+#
+#         theta_freq[idx] = np.mean(temp_theta[:, 0])
+#         theta_freq_std[idx] = np.std(temp_theta[:, 0])
+#
+#         save_arr = np.vstack([p_vec, theta_freq, theta, gamma]).T
+#         np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr,
+#                    header="weight, theta_freq, theta, gamma")
+
 def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
                            conns=None, I=None,
-                           conn_range=[0.5, 1.5], plot_lpr=True, exclude_invalid=True, sdir=""):
+                           conn_range=[0.5, 1.5], n_trials=1,
+                           plot_lpr=True, exclude_invalid=True, sdir=""):
     if conns == None:
         P = PRM_v2()
         new_conns = deepcopy(P.conns)
@@ -477,7 +527,9 @@ def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
         ref_tpp, ref_gpp = ref_power()
         # print(ref_tpp, ref_gpp)
 
-    save_name = f"w{conn1}_{conn2}_theta_freq.png"
+    save_name = f"w{conn1}_{conn2}_theta_freq"
+    save_ext_img = '.png'
+    save_ext_txt = '.dat'
 
     if plot_lpr:
         fig, ax = plt.subplots(nrows=2, sharex=True,
@@ -502,9 +554,9 @@ def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
 
     for idx, val in tqdm(enumerate(p_vec)):
         new_conns[conn1][conn2] = val
-        temp_theta, temp_gamma = np.zeros((5, 2)), np.zeros((5, 2))
+        temp_theta, temp_gamma = np.zeros((n_trials, 2)), np.zeros((n_trials, 2))
 
-        for j in range(5):
+        for j in range(n_trials):
             temp_theta[j], temp_gamma[j] = run_prm(conns=new_conns, I=new_I)
 
         theta[idx] = np.mean(temp_theta[:, 1])
@@ -522,7 +574,7 @@ def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
                     LPR_valid[idx] = np.nan
                 else:
                     LPR_valid[idx] = LPR[idx]
-
+    save_arr = np.vstack([x_vec, theta_freq, theta, gamma, LPR]).T
     # ==============================================================================
     # First subplot --> theta frequency vs stim
     p1, = ax[0].plot(x_vec, theta_freq,
@@ -557,11 +609,140 @@ def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
     # ax.grid()
     plt.tight_layout()
     try:
-        plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
+        plt.savefig(f"./figures/{sdir}/{save_name}{save_ext_img}")
+        np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr,
+                   header="stim, theta_freq, theta, gamma, LPR")
     except FileNotFoundError:
-        os.mkdir(f"./figures/1d_metric3/{sdir}")
-        plt.savefig(f"./figures/1d_metric3/{sdir}/{save_name}")
+        os.makedirs(f"./figures/{sdir}/raw")
+        plt.savefig(f"./figures/{sdir}/{save_name}{save_ext_img}")
+        np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr,
+                   header="stim, theta_freq, theta, gamma, LPR")
 
+    plt.close()
+
+
+# def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
+#                            conns=None, I=None,
+#                            conn_range=[0.5, 1.5], plot_lpr=True, exclude_invalid=True, sdir=""):
+#     if conns == None:
+#         P = PRM_v2()
+#         new_conns = deepcopy(P.conns)
+#     else:
+#         new_conns = deepcopy(conns)
+#
+#     if I == None:
+#         P = PRM_v2()
+#         new_I = deepcopy(P.I)
+#     else:
+#         new_I = deepcopy(I)
+#
+#     if exclude_invalid:
+#         ref_tpp, ref_gpp = ref_power()
+#         # print(ref_tpp, ref_gpp)
+#
+#     save_name = f"w{conn1}_{conn2}_theta_freq"
+#     save_ext_img = '.png'
+#     save_ext_txt = '.dat'
+#
+#     if plot_lpr:
+#         fig, ax = plt.subplots(nrows=2, sharex=True,
+#                                figsize=[9, 6.4], dpi=250)
+#     else:
+#         fig, ax = plt.subplots(figsize=[9, 3], dpi=250)
+#
+#     x_vec = np.linspace(conn_range[0], conn_range[1], num_pts)
+#     p_vec = x_vec * new_conns[conn1][conn2]
+#
+#     theta = np.zeros(n_pts)
+#     gamma = np.zeros(n_pts)
+#     theta_std = np.zeros(n_pts)
+#     gamma_std = np.zeros(n_pts)
+#
+#     theta_freq = np.zeros(n_pts)
+#     theta_freq_std = np.zeros(n_pts)
+#
+#     if plot_lpr:
+#         LPR = np.zeros(n_pts)
+#         LPR_valid = np.zeros(n_pts)
+#
+#     for idx, val in tqdm(enumerate(p_vec)):
+#         new_conns[conn1][conn2] = val
+#         temp_theta, temp_gamma = np.zeros((5, 2)), np.zeros((5, 2))
+#
+#         for j in range(n_trials):
+#             temp_theta[j], temp_gamma[j] = run_prm(conns=new_conns, I=new_I)
+#
+#         theta[idx] = np.mean(temp_theta[:, 1])
+#         theta_std[idx] = np.std(temp_theta[:, 1])
+#         gamma[idx] = np.mean(temp_gamma[:, 1])
+#         gamma_std[idx] = np.std(temp_gamma[:, 1])
+#
+#         theta_freq[idx] = np.mean(temp_theta[:, 0])
+#         theta_freq_std[idx] = np.std(temp_theta[:, 0])
+#
+#         if plot_lpr:
+#             LPR[idx] = np.log10(theta[idx] / gamma[idx])
+#             if exclude_invalid:
+#                 if theta[idx] < 48 or gamma[idx] < 0.31:
+#                     LPR_valid[idx] = np.nan
+#                     theta_freq_valid[idx] = np.nan
+#                     p_valid[idx] = np.nan
+#                 else:
+#                     LPR_valid[idx] = LPR[idx]
+#                     theta_freq_valid[idx] = theta_freq[idx]
+#
+#     if draw_fit:
+#         x_valid = x_valid[~np.isnan(x_valid)]
+#         theta_freq_valid = theta_freq_valid[~np.isnan(theta_freq_valid)]
+#         try:
+#             a1, a0 = np.polyfit(x_valid, theta_freq_valid, 1)
+#             print(a1, a0)
+#         except LinAlgError:
+#             a1, a0 = np.nan, np.nan
+#         text_coords = (stim_range[0] + 0.1*(stim_range[1] - stim_range[0]), max(theta_freq))
+#         print(f"Valid Stim Range: {np.min(x_valid).round(2), np.max(x_valid).round(2)}")
+#         print(f"Theta Frequency Range: {np.min(theta_freq_valid), np.max(theta_freq_valid)}")
+#
+#
+#     save_arr = np.vstack([x_vec, theta_freq, theta, gamma, LPR]).T
+#     np.savetxt(f"./figures/{sdir}/raw/{save_name}{save_ext_txt}", save_arr,
+#                header="stim, theta_freq, theta, gamma, LPR")
+#     # ==============================================================================
+#     # First subplot --> theta frequency vs stim
+#     p1, = ax[0].plot(x_vec, theta_freq,
+#                      ls='--', marker='.', color='C0')  # plot theta freq
+#     ax[0].fill_between(x_vec, theta_freq - theta_freq_std, theta_freq + theta_freq_std,
+#                        color="C0", alpha=0.2)  # plot theta error
+#
+#     # subplot 1 axes and labels
+#     ax[0].set_title(f"$w_{{{conn1.upper()} \\rightarrow {conn2.upper()}}}$")
+#     ax[0].set_xlim(x_vec[0], x_vec[-1])
+#     ax[0].set_ylabel("Theta Frequency")
+#
+#     ax[0].yaxis.label.set_color(p1.get_color())
+#
+#     ax[0].tick_params(axis='y', colors=p1.get_color())
+#     ax[0].grid(axis='x')
+#     # end of first subplot
+#     # ==============================================================================
+#     # ==============================================================================
+#     # second subplot --> log power ratio vs stim
+#     ax[1].plot(x_vec, LPR,
+#                ls='--', marker='.', color='C0')
+#     if exclude_invalid:
+#         ax[1].plot(x_vec, LPR_valid,
+#                    ls='', marker='.', color='C3')
+#
+#     # subplot 2 axes and labels
+#     ax[1].set_xlabel("%$\Delta$ Parameter")
+#     ax[1].set_ylabel("Log Power Ratio")
+#     ax[1].grid(axis='x')
+#
+#     # ax.grid()
+#     plt.tight_layout()
+#     plt.tight_layout()
+#     plt.savefig(f"./figures/{sdir}/{save_name}{save_ext_img}")
+#
 
 def plot_conn_v_theta_gamma(conn1, conn2, n_pts=41,
                             conns=None, I=None,
@@ -760,6 +941,11 @@ max_inputs = len(c_list)
 #     plot_stim_v_freq(ctype, num_pts, conns="default",
 #                      sdir=f"new_ref_set/ref_stim_v_freq", stim_range=(-2, 2))
 
+n = 8
+new_conns = conn_data[n]
+plot_conn_v_theta_freq("pv", "cck", n_pts=121,
+                       sdir=f"conn_10/conn_10_{n}/10_{n}_conn_v_power")
+#
 # plot_conn_v_theta_freq("pv", "pyr", num_pts, conns=new_conns,
 #                        sdir=f"conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conn_v_freq")
 #
@@ -772,37 +958,40 @@ max_inputs = len(c_list)
 # plot_conn_v_theta_gamma("pv", "pyr", num_pts, conns=None,
 #                        sdir="new_ref_set/ref_conn_v_power")
 
-DATA = pd.read_csv("/home/spandans/skinner_lab_master/prm/freq_ranges_pyr_stim.csv", index_col=0)
-DATA = DATA.applymap(lambda x: np.array(str(x).split(','), dtype='float32'))
-
-# do all the things for a given connection set
-# for n in [135]: #[0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
-for conn in DATA.index:
-    n = int(conn.split('_')[-1])
-    new_conns = conn_data[n]
-    try:
-        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/"
-                    f"higher_res/raw/")
-        os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/"
-                    f"higher_res/raw/")
-    except FileExistsError:
-        pass
+# ==============================================================================================
+# DATA = pd.read_csv("/prm/sheets/freq_ranges_pyr_stim.csv", index_col=0)
+# DATA = DATA.applymap(lambda x: np.array(str(x).split(','), dtype='float32'))
 #
-#     ax1 = create_radar()
-#     plot_radar(new_conns, ax1, mode="relative")
-#     plt.savefig(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conns_radar.png")
-    run = 'pv_025'
-    for ctype in ["pyr"]:
-        plot_stim_theta_gamma(ctype, num_pts, conns=new_conns, run_type=run,
-                              exclude_invalid=True, stim_range=DATA.loc[conn][run],
-                              sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/"
-                                   f"higher_res/")
-        plot_stim_v_freq(ctype, num_pts, conns=new_conns, run_type=run,
-                              exclude_invalid=True, stim_range=DATA.loc[conn][run],
-                              sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/"
-                                   f"higher_res/")
-        print(f"Completed for {ctype} cell")
+# # do all the things for a given connection set
+# # for n in [135]: #[0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+# for conn in DATA.index:
+#     n = int(conn.split('_')[-1])
+#     new_conns = conn_data[n]
+#     try:
+#         os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/"
+#                     f"higher_res/raw/")
+#         os.makedirs(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/"
+#                     f"higher_res/raw/")
+#     except FileExistsError:
+#         pass
+# #
+# #     ax1 = create_radar()
+# #     plot_radar(new_conns, ax1, mode="relative")
+# #     plt.savefig(f"./figures/conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_conns_radar.png")
+#     run = 'pv_025'
+#     for ctype in ["pyr"]:
+#         plot_stim_theta_gamma(ctype, num_pts, conns=new_conns, run_type=run,
+#                               exclude_invalid=True, stim_range=DATA.loc[conn][run],
+#                               sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_power/"
+#                                    f"higher_res/")
+#         plot_stim_v_freq(ctype, num_pts, conns=new_conns, run_type=run,
+#                               exclude_invalid=True, stim_range=DATA.loc[conn][run],
+#                               sdir=f"conn_{conn_file_num}/conn_{conn_file_num}_{n}/{conn_file_num}_{n}_stim_v_freq/"
+#                                    f"higher_res/")
+#         print(f"Completed for {ctype} cell")
+#
+#     print(f"Completed connection set 10-{n}")
 
-    print(f"Completed connection set 10-{n}")
+# =====================================================================================================
 
 # plt.show()

@@ -1,3 +1,4 @@
+import json
 from copy import deepcopy
 
 import numpy as np
@@ -108,8 +109,7 @@ def simulate(time, P, dt=0.001, tau=5, stim=None):
         c_list = ["pyr", "bic", "pv", "cck"]
         for c1 in c_list:
             P.R[c1][t + 1] = P.R[c1][t] + dt * P.alpha[c1] * \
-                             (-P.R[c1][t] + P.r_o[c1] * f(
-                                 sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1] + stim[c1][t])) + \
+                             (-P.R[c1][t] + P.r_o[c1] * f(sum((P.conns[c2][c1] * P.R[c2][t - tau]) for c2 in c_list) + P.I[c1] + stim[c1][t])) + \
                              np.sqrt(2 * P.alpha[c1] * P.D[c1] * dt) * np.random.normal(0, 1)
     return P
 
@@ -252,6 +252,9 @@ def run_prm(conns=None, I=None, dt=0.001, T=8.0,
         conns = "default"
     if I == None:
         I = "default"
+
+    if stim == None:
+        stim = {"pyr": 0, "bic": 0, "cck": 0, "pv": 0}
     fs = 1 / dt
     new_prm = PRM_v2(conns, I)
 
@@ -302,7 +305,7 @@ def create_radar():
     num_labels = len(conn_labels)
 
     angles = np.linspace(0, 2 * np.pi, num_labels, endpoint=False)
-    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True), dpi=400)
     # line up first datapoint with vertical axis
     ax.set_theta_offset(np.pi / 2)
     ax.set_theta_direction(-1)
@@ -317,7 +320,7 @@ def create_radar():
         else:
             label.set_horizontalalignment('right')
 
-    # ax.set_ylim(0, 3)
+    ax.set_ylim(0, 3)
 
     ax.set_rlabel_position(180 / num_labels)
     # Add some custom styling.
@@ -331,6 +334,7 @@ def create_radar():
     ax.spines['polar'].set_color('#222222')
     # Change the background color inside the circle itself.
     ax.set_facecolor('#FAFAFA')
+    plt.tight_layout()
 
     return ax
 
@@ -377,9 +381,9 @@ def plot_radar(in_conns, ax, mode="absolute", label=None, color=None):
         v_plot = np.append(v_ratio, v_ratio[0])
         # ax.set_ylim(0, 3)
 
-    ax.plot(angles, v_plot, color=color, linewidth=0.2, label=label, alpha=0.3)
+    ax.plot(angles, v_plot, color=color, linewidth=0.1, label=label, alpha=0.2)
     # Fill it in.
-    ax.fill(angles, v_plot, color=color, alpha=0.5)
+    ax.fill(angles, v_plot, color=color, alpha=0.1)
 
 
 def plot_conns(in_conns, in_ref_conns = None):
@@ -460,6 +464,67 @@ def plot_conns(in_conns, in_ref_conns = None):
     ax.spines['polar'].set_color('#222222')
     # Change the background color inside the circle itself.
     ax.set_facecolor('#FAFAFA')
+
+def make_boxplot(conn_dict):
+    c_list = ["pyr", "bic", "pv", "cck"]
+
+    conn_arr = np.zeros((len(conn_dict), 9))
+    conn_labels = []
+    for c in c_list:
+        for c2 in c_list:
+            conn_labels.append(f"$w_{{{c.upper()} \\rightarrow {c2.upper()}}}$")
+
+    conn = conn_dict[0]
+    v = []
+    for c in [*conn]:
+        v.append([*conn[c].values()])
+    v = np.array(v).reshape(16)
+    invalid = np.where(v == 0)
+    conn_labels = np.delete(conn_labels, invalid)
+
+    for idx, conn in enumerate(conn_dict):
+        v = []
+        for c in [*conn]:
+            v.append([*conn[c].values()])
+        v = np.array(v).reshape(16)
+        v = np.delete(v, invalid)
+        conn_arr[idx] = v
+
+    # stats = np.zeros((9, 3))
+
+    medianprops = dict(
+        linewidth=4.5,
+        solid_capstyle="butt"
+    )
+    boxprops = dict(
+        linewidth=3
+    )
+    whiskerprops = dict(
+        linewidth=3
+    )
+    capprops = dict(
+        linewidth=3
+    )
+
+    plt.figure(figsize=(18, 10), dpi=400)
+    plt.boxplot(conn_arr, labels=conn_labels,
+                medianprops=medianprops,
+                boxprops=boxprops,
+                whiskerprops=whiskerprops,
+                capprops=capprops)
+    plt.ylabel("Synaptic Weight")
+
+    # for i in range(9):
+    #     stats[i] = [np.mean(conn_arr[:, i]), np.median(conn_arr[:, i]), np.std(conn_arr[:, i])]
+    #     print(conn_labels[i], f"\nMean: {np.round(stats[i, 0], 7)}\nMedian: {np.round(stats[i, 1], 7)}"
+    #                           f"\nSD: {stats[i, 2]:.3e}")
+    #     print("="*60)
+        # plt.text(i+0.75, 0.2,
+        #          f"Mean: {np.round(stats[i, 0], 2)}\nSD: {np.round(stats[i, 1], 2)}")
+
+
+    plt.tight_layout()
+    # plt.savefig("./figures/conn_10/boxplot_conn_10.png")
 
 def ref_power():
     ref_prm = PRM_v2()
@@ -569,15 +634,18 @@ time = np.arange(0, T, dt)
 # h = 0
 # r_o = 30
 # ===============================================================
-# new_prm = PRM_v2()
-# #
-# for idx in new_prm.D:
-#     new_prm.D[idx] = 0.0
+# with open(f"search_results/search_results_conn_10.json", "r") as foo:
+#     conn_data = json.load(foo)
+# new_prm = PRM_v2(conns_dict=conn_data[8])
+# print(new_prm.conns)
+# # #
+# # for idx in new_prm.D:
+# #     new_prm.D[idx] = 0.0
 # new_prm.set_init_state(len(time))
 # new_prm = simulate(time, new_prm, dt)
-# print(pv_bic_ratio(new_prm.R))
-# print(new_prm.D)
-# #
+# # print(pv_bic_ratio(new_prm.R))
+# # print(new_prm.D)
+# # #
 # plot_trace(time, new_prm.R, new_prm.labels)
 # dps_tpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'theta', 'power', plot_Fig=True)["pyr"]
 # dps_gpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'gamma', 'power', plot_Fig=True)["pyr"]
@@ -605,7 +673,7 @@ time = np.arange(0, T, dt)
 # print(""*60)
 
 
-# plt.show()
+plt.show()
 # ============================================================
 def equilibrPRM(prm, S=None):
     if S == None:

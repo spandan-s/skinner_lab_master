@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from prm_v2 import *
-
+from prm_htest import hypothesis_test
 
 from kneed import KneeLocator
 from sklearn.datasets import make_blobs
@@ -39,14 +39,16 @@ def make_boxplot(conn_dict):
 
     stats = np.zeros((9, 2))
 
-    plt.figure(figsize=(18, 10), dpi=250)
+    plt.figure(figsize=(18, 10), dpi=400)
     plt.boxplot(conn_arr, labels=conn_labels)
+    plt.ylabel("Synaptic Weight")
 
-    for i in range(9):
-        stats[i] = [np.mean(conn_arr[:, i]), np.std(conn_arr[:, i])]
-        plt.text(i+0.75, 0.2,
-                 f"Mean: {np.round(stats[i, 0], 2)}\nSD: {np.round(stats[i, 1], 2)}")
+    # for i in range(9):
+    #     stats[i] = [np.mean(conn_arr[:, i]), np.std(conn_arr[:, i])]
+    #     plt.text(i+0.75, 0.2,
+    #              f"Mean: {np.round(stats[i, 0], 2)}\nSD: {np.round(stats[i, 1], 2)}")
 
+    plt.tight_layout()
     plt.savefig("./figures/conn_10/boxplot_conn_10.png")
 def k_means(conn_data, k):
 
@@ -96,23 +98,23 @@ with open("search_results/search_results_conn_8.json", "r") as f:
 # with open("search_results/search_results_i_4.json", "r") as f:
 #     i_data = json.load(f)
 
-ref_conns = {
-    "pyr": {
-        "pyr": 0.05, "bic": 0.04, "pv": 0.02, "cck": 0.0
-    },
-    "bic": {
-        "pyr": -0.02, "bic": 0.0, "pv": 0.0, "cck": 0.0
-    },
-    "pv": {
-        "pyr": -0.03, "bic": 0.0, "pv": -0.055, "cck": -0.075
-    },
-    "cck": {
-        "pyr": 0.0, "bic": 0.0, "pv": -0.15, "cck": -0.15
-    },
-}
-
-c_list = {"pyr", "bic", "pv", "cck"}
-true_count, false_count = 0, 0
+# ref_conns = {
+#     "pyr": {
+#         "pyr": 0.05, "bic": 0.04, "pv": 0.02, "cck": 0.0
+#     },
+#     "bic": {
+#         "pyr": -0.02, "bic": 0.0, "pv": 0.0, "cck": 0.0
+#     },
+#     "pv": {
+#         "pyr": -0.03, "bic": 0.0, "pv": -0.055, "cck": -0.075
+#     },
+#     "cck": {
+#         "pyr": 0.0, "bic": 0.0, "pv": -0.15, "cck": -0.15
+#     },
+# }
+#
+# c_list = {"pyr", "bic", "pv", "cck"}
+# true_count, false_count = 0, 0
 
 # print(run_prm(conn_data_2[41], plot=True))
 
@@ -138,18 +140,18 @@ true_count, false_count = 0, 0
 # test_list = [6, 15, 38, 79]
 # test_list = [1, 2, 12, 58]
 # valid_ish = [34, 46, 62, 66, 115
-n = 26
+# n = 26
 # print(hypothesis_test(conn_data[n], plot=True))
-stim = {
-    "pyr": 0.0,
-    "bic": 0.0,
-    "pv": 0.0,
-    "cck": 0.0
-}
-
-pst = 7 * len(time) // 8
-
-prm_0 = PRM_v2()
+# stim = {
+#     "pyr": 0.0,
+#     "bic": 0.0,
+#     "pv": 0.0,
+#     "cck": 0.0
+# }
+#
+# pst = 7 * len(time) // 8
+#
+# prm_0 = PRM_v2()
 # prm_1 = PRM_v2(conns_dict=conn_data[26])
 # prm_2 = PRM_v2(conns_dict=conn_data[71])
 # prm_3 = PRM_v2(conns_dict=conn_data_2[92])
@@ -236,14 +238,20 @@ prm_0 = PRM_v2()
 with open("search_results/search_results_conn_10.json", "r") as f:
     conn_data = np.array(json.load(f))
 
+# hypothesis_test(conn_data[8], plot=True)
+
+plt.rcParams.update({'font.size': 16})
 # make_boxplot(conn_data)
 
 # theta_base_power, gamma_base_power = [], []
 #
-for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
-    run_prm(conn_data[n], plot=True)
-    plt.ylim((0, 42))
-    plt.savefig(f"./figures/conn_10/pyr_activity/pyr_activity_10_{n}.png")
+ax = create_radar()
+#
+# for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+#     plot_radar(conn_data[n], ax)
+    # run_prm(conn_data[n], plot=True)
+    # plt.ylim((0, 42))
+    # plt.savefig(f"./figures/conn_10/pyr_activity/pyr_activity_10_{n}.png")
 #     theta_base_power.append(theta[1])
 #     gamma_base_power.append(gamma[1])
 #
@@ -341,12 +349,15 @@ for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
 # with open("search_results/search_results_conn_8.json", "r") as f:
 #     conn_data = json.load(f)
 
-# for i in range(len(conn_data)):
-    # plot_radar(conn_data[i], ax1, relative_to_ref=False, color='black')
+for i in range(len(conn_data)):
+    plot_radar(conn_data[i], ax, mode="absolute", color='black')
+
+plt.savefig("/home/spandans/skinner_lab_master/prm/figures/conn_10/conn_10_radar_abs_2.png")
 
 # plot_radar(conn_data[92], ax1, label=f"conn_7_92")
 
 # plt.legend()
 # ax1.set_ylim(0, 3)
 # plt.tight_layout()
-plt.show()
+# plt.savefig("./figures/10_8_htest.png")
+# plt.show()

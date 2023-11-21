@@ -7,6 +7,10 @@ from scipy.signal import decimate, find_peaks, periodogram
 
 
 def pre_filter(Y, fs, cutoff=[0.5, 100], w0=60):
+    """
+    filter the signal to remove any components below a low and high cutoff
+    as well as remove 60 Hz DC component
+    """
     y_filt_60Hz = notch_filt(Y, fs, 60, Q=50)
     y_filt = filter_lfp(y_filt_60Hz, fs, cutoff)
 
@@ -14,6 +18,10 @@ def pre_filter(Y, fs, cutoff=[0.5, 100], w0=60):
 
 
 def downsample_signal(X, Y, M=50):
+    """
+    downsample signal
+    :param M: downsample factor - one sample per M samples is retained in the downsampled signal
+    """
     # down-sample signal to make difference calculation easier
     ds_Y = decimate(Y, M)
     newX = np.linspace(X[0], X[-1], len(ds_Y), endpoint=False)
@@ -22,6 +30,12 @@ def downsample_signal(X, Y, M=50):
 
 
 def find_jumps(Y, fs, threshold=0.025, mask_len=5):
+    """
+    find where there are large "jumps" in the signal
+    uses a convolution with a constant function to "smooth out" discontinuities
+    returns indices of jumps
+    """
+
     # find element-wise difference of signal
     diff_Y = np.diff(Y)
 
@@ -38,6 +52,9 @@ def find_jumps(Y, fs, threshold=0.025, mask_len=5):
 
 
 def cut_signal(X, Y, fs):
+    """
+    cuts signal into sections of length < 30s that don't contain jumps
+    """
     newX, ds_Y = downsample_signal(X, Y)
 
     jumps = find_jumps(ds_Y, fs)
@@ -126,13 +143,13 @@ def plot_periodograms(X, Y, fs):
     fig, ax = plt.subplots(1, 3, figsize=[16, 9])
     ax[0].set_title('Delta Periodogram')
     ax[0].plot(fxx_delta, pxx_delta)
-    ax[0].set_xlim(-0.5, 20)
+    ax[0].set_xlim(-0.5, 7)
     ax[0].set_xlabel('Frequency [Hz]')
     ax[0].set_ylabel('Theta Spectral Density')
 
     ax[1].set_title('Theta Periodogram')
     ax[1].plot(fxx_theta, pxx_theta)
-    ax[1].set_xlim(-0.5, 20)
+    ax[1].set_xlim(1.5, 20)
     ax[1].set_xlabel('Frequency [Hz]')
     ax[1].set_ylabel('Theta Spectral Density')
 
