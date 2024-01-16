@@ -40,7 +40,8 @@ cage_dir = "cage B #5 left cut"
 rec_type = "pre-kindle"
 file_num = "2017_11_08_0007"
 
-entries = read_file(f"srs_analysis_results/{cage_dir}/{rec_type}/{file_num}.txt")
+# entries = read_file(f"srs_analysis_results/{cage_dir}/{rec_type}/{file_num}.txt")
+entries = read_file("/home/spandans/Documents/Skinner_Lab/skinner_lab_master/in_vivo/17d01003.txt")
 entries[:] = [x for x in entries if x]
 # print(entries[1])
 

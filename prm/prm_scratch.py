@@ -7,6 +7,7 @@ import seaborn as sns
 import statsmodels.formula.api as smf
 
 from prm_v2 import *
+# from gen_alg_2 import conns_to_list
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import statsmodels.api as sm
@@ -61,25 +62,50 @@ def plot_varstim(conns, stim_cell, stim_range, n_stim, sname="tempfig.png"):
     plt.savefig(f"/home/spandans/skinner_lab_master/prm/figures/{sname}")
     plt.close()
 
-with open("search_results/search_results_conn_10.json", "r") as f:
-    conn_data = json.load(f)
+# ==========================================================
+# with open("search_results/search_results_conn_12.json", "r") as f:
+#     conn_dict = json.load(f)
+#
+# save_arr = np.zeros((len(conn_dict), 9))
+#
+# conn = conn_dict[0]
+# v = []
+# for c in [*conn]:
+#     v.append([*conn[c].values()])
+# v = np.array(v).reshape(16)
+# invalid = np.where(v == 0)
+#
+# for idx, conn in enumerate(conn_dict):
+#     v = []
+#     for c in [*conn]:
+#         v.append([*conn[c].values()])
+#     v = np.array(v).reshape(16)
+#     v = np.delete(v, invalid)
+#     save_arr[idx] = v
+#
+# np.savetxt("search_results/run_12.dat", save_arr)
+# ==========================================================
+P = import_conns(0)
+R = baseline_sim(P)
+save_signal("signals/baseline_10_0.dat", time=time, R=R)
 
-stim = {'pyr': 0, 'bic': 0, 'pv': 0, 'cck': 0}
-for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
-    test_prm = PRM_v2(conn_data[n])
 
-    # test_prm.set_init_state(len(time))
-    # test_prm = simulate(time, test_prm)
-    # pbr = pv_bic_ratio(test_prm.R)
-    # max_cck = np.max(test_prm.R["cck"][int(fs):])
-    print(f"Conn 10-{n}")
-    for c1 in test_prm.conns:
-        for c2 in test_prm.conns[c1]:
-            if test_prm.conns[c1][c2] != 0:
-                print(c1, c2, test_prm.conns[c1][c2])
-    # print(f"PV-BiC Ratio = {pbr.round(3)}")
-    # print(f"Max CCK = {max_cck.round(3)}")
-    print('='*60+'\n')
+# stim = {'pyr': 0, 'bic': 0, 'pv': 0, 'cck': 0}
+# for n in [0, 2, 3, 7, 8, 22, 38, 50, 103, 135]:
+#     test_prm = PRM_v2(conn_data[n])
+#
+#     # test_prm.set_init_state(len(time))
+#     # test_prm = simulate(time, test_prm)
+#     # pbr = pv_bic_ratio(test_prm.R)
+#     # max_cck = np.max(test_prm.R["cck"][int(fs):])
+#     print(f"Conn 10-{n}")
+#     for c1 in test_prm.conns:
+#         for c2 in test_prm.conns[c1]:
+#             if test_prm.conns[c1][c2] != 0:
+#                 print(c1, c2, test_prm.conns[c1][c2])
+#     # print(f"PV-BiC Ratio = {pbr.round(3)}")
+#     # print(f"Max CCK = {max_cck.round(3)}")
+#     print('='*60+'\n')
 
 # run_prm(conn_data[2], stim={"pyr": 0, "bic": 0, 'cck': -0.5, "pv": 0}, plot=True)
 #

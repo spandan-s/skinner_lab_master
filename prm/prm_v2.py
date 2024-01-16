@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 
 import numpy as np
+import scipy.signal
 import sympy
 from matplotlib import pyplot as plt
 from numpy.linalg import LinAlgError
@@ -80,13 +81,17 @@ class PRM_v2:
         else:
             self.I = deepcopy(param_dict)
 
-    def set_init_state(self, n_samples):
+    def set_init_state(self, n_samples,
+                       ICs = [0, 0, 0, 0]):
         self.R = {
             "pyr": np.zeros(n_samples),
             "bic": np.zeros(n_samples),
             "pv": np.zeros(n_samples),
             "cck": np.zeros(n_samples),
         }
+
+        for c, ic in zip(['pyr', 'bic', 'cck', 'pv'], ICs):
+            self.R[c][0] = ic
 
 
 def f(u, beta=20, h=0):
@@ -113,6 +118,12 @@ def simulate(time, P, dt=0.001, tau=5, stim=None):
                              np.sqrt(2 * P.alpha[c1] * P.D[c1] * dt) * np.random.normal(0, 1)
     return P
 
+def baseline_sim(P, IC = [0, 0, 0, 0]):
+    # initialise and simulate PRM at baseline
+    P.set_init_state(len(time), IC)
+    P = simulate(time, P)
+    ret = P.R
+    return ret
 
 def calc_spectral(R, fs, time,
                   band='theta', mode=None, plot_Fig=False, plot_Filter=False, labels=None):
@@ -218,18 +229,18 @@ def calc_spectral(R, fs, time,
         return fm, power
 
 
-def plot_trace(time, R, labels, mode="pyr_only"):
-    plot_start_time = 3 * time.size // 4
+def plot_trace(time, R, labels, mode="pyr"):
+    plot_start_time = 7 * time.size // 8
     plt.figure(figsize=[13, 8])
-    if mode == "pyr_only":
+    if mode == "pyr":
         c_list = ["pyr"]
     else:
         c_list = ["pyr", "bic", "cck", "pv"]
     for c in c_list:
         plt.plot(time[plot_start_time:], R[c][plot_start_time:], label=labels[c])
 
-    plt.xlabel('Time (ms)')
-    plt.ylabel('Activity')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Activity [Hz]')
     plt.legend()
 
 
@@ -273,6 +284,16 @@ def run_prm(conns=None, I=None, dt=0.001, T=8.0,
     gf, gpp = find_pyr_power(new_prm.R, fs, 'gamma')
 
     return [tf, tpp], [gf, gpp]
+
+def import_conns(n=0):
+    # import conns
+    with open(f"/home/spandans/Documents/Skinner_Lab/skinner_lab_master/prm/search_results/search_results_conn_10.json",
+              "r") as f:
+        conn_data = json.load(f)
+
+    # create PRM
+    P = PRM_v2(conns_dict=conn_data[n])
+    return P
 
 def pv_bic_ratio(R):
 
@@ -543,14 +564,7 @@ def ref_power():
     ref_gpp = np.mean(temp_gamma)
     return ref_tpp, ref_gpp
 
-def find_pyr_power(R, fs, band="theta"):
-    if band == "theta":
-        f_lo, f_hi = 3, 12
-    elif band == "gamma":
-        f_lo, f_hi = 20, 100
-    else:
-        raise IOError("Invalid band: Band must be 'theta' or 'gamma'")
-
+def find_psd(R, fs):
     segment = int(fs * 4)
     myhann = signal.get_window('hann', segment)
 
@@ -562,6 +576,18 @@ def find_pyr_power(R, fs, band="theta"):
 
     fxx_pyr, Pxx_pyr = signal.welch(signal_pyr, **myparams)
     fxx_pv, Pxx_pv = signal.welch(signal_pv, **myparams)
+
+    return fxx_pyr, Pxx_pyr, fxx_pv, Pxx_pv
+
+def find_pyr_power(R, fs, band="theta"):
+    if band == "theta":
+        f_lo, f_hi = 3, 12
+    elif band == "gamma":
+        f_lo, f_hi = 20, 100
+    else:
+        raise IOError("Invalid band: Band must be 'theta' or 'gamma'")
+
+    fxx_pyr, Pxx_pyr, fxx_pv, Pxx_pv = find_psd(R, fs)
 
     fxx_pyr_filt = fxx_pyr[(fxx_pyr > f_lo) & (fxx_pyr < f_hi)]
     Pxx_pyr_filt = Pxx_pyr[(fxx_pyr > f_lo) & (fxx_pyr < f_hi)]
@@ -621,6 +647,27 @@ def theta_freq_vs_gamma(sr, tf, tp, gp):
             out_data[idx] = np.array([np.nan, np.nan])
 
     return out_data
+
+def spike_raster(R):
+    peaks = {}
+    prominence_dict = {
+        'pyr': 10,
+        'pv': 8,
+        'bic': 10,
+        'cck': 4
+    }
+
+    for ctype in ['pyr', 'bic', 'cck', 'pv']:
+        peaks[ctype], _ = scipy.signal.find_peaks(R[ctype], prominence=prominence_dict[ctype])
+
+    return peaks
+
+def save_signal(fname, time, R):
+    DATA = np.column_stack((time, *R.values()))
+    header = "t\tR_PYR\tR_BiC\tR_CCK\tR_PV"
+
+    np.savetxt(fname, DATA, header=header)
+
 # =============================================================
 # Parameters
 T = 8.0  # total time (units in sec)
@@ -634,63 +681,14 @@ time = np.arange(0, T, dt)
 # h = 0
 # r_o = 30
 # ===============================================================
-# with open(f"search_results/search_results_conn_10.json", "r") as foo:
-#     conn_data = json.load(foo)
-# new_prm = PRM_v2(conns_dict=conn_data[8])
-# print(new_prm.conns)
-# # #
-# # for idx in new_prm.D:
-# #     new_prm.D[idx] = 0.0
-# new_prm.set_init_state(len(time))
-# new_prm = simulate(time, new_prm, dt)
-# # print(pv_bic_ratio(new_prm.R))
-# # print(new_prm.D)
-# # #
-# plot_trace(time, new_prm.R, new_prm.labels)
-# dps_tpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'theta', 'power', plot_Fig=True)["pyr"]
-# dps_gpp = calc_spectral(new_prm.R, fs, time, new_prm.labels, 'gamma', 'power', plot_Fig=True)["pyr"]
+# R = baseline_sim(import_conns(0))
+# peaks = spike_raster(R)
 #
-# print(dps_tpp, dps_gpp)
-
-# ax = create_radar()
-# plot_radar(new_prm.conns)
-
-# max_bic = np.max(new_prm.R['bic'])
-# max_pv = np.max(new_prm.R['pv'])
+# # plt.plot(time, R['pyr'])
+# plt.plot(time[peaks['pyr']], 10*np.ones_like([peaks['pyr']][0]), 'x')
+# plt.plot(time[peaks['bic']], 10*np.ones_like([peaks['bic']][0]), 'x')
+# plt.plot(time[peaks['cck']], 10*np.ones_like([peaks['cck']][0]), 'x')
+# # plt.plot(time[peaks['pv']], 40*np.ones_like([peaks['pv']][0]), 'x')
 #
 #
-#
-# pst = int(fs)
-#
-# max_pv = np.max(new_prm.R["pv"][pst:])
-# max_bic = np.max(new_prm.R["bic"][pst:])
-# max_cck = np.max(new_prm.R["cck"][pst:])
-# print(f"Max PV = {max_pv}")
-# print(f"Max BiC = {max_bic}")
-# print(f"Max CCK = {max_cck}")
-# print(f"PV-BiC ratio = {max_pv/max_bic}")
-# run_prm(plot=True)
-# print(""*60)
-
-
-plt.show()
-# ============================================================
-def equilibrPRM(prm, S=None):
-    if S == None:
-        S = {'pyr': 0, 'bic': 0, 'pv': 0, 'cck': 0}
-    w = prm.conns
-    i = prm.I
-    x1, x2, x3, x4 = symbols('x(1:5)')
-
-    eqs = [-x1 + prm.r_o["pyr"]*f_sp(w['pyr']['pyr']*x1 + w['bic']['pyr']*x2 + w['pv']['pyr']*x4 + i['pyr'] + S['pyr']),
-           -x2 + prm.r_o['bic']*f_sp(w['pyr']['bic']*x1 + i['bic'] + S['bic']),
-           -x3 + prm.r_o['cck']*f_sp(w['cck']['cck']*x3 + w['pv']['cck']*x4 + i['cck'] + S['cck']),
-           -x4 + prm.r_o['pv']*f_sp(w['cck']['pv']*x3 + w['pv']['pv']*x4 + w['pyr']['pv']*x1 + i['pv'] + S['pv'])]
-
-    xStar = nsolve(eqs, [x1, x2, x3, x4], [-1]*4)
-
-    return xStar
-
-# new_prm = PRM_v2()
-
-# print(equilibrPRM(new_prm))
+# plt.show()

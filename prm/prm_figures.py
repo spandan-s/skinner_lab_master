@@ -116,10 +116,10 @@ def plot_fig_5(n, ctype):
     save_name = f'stim_to_{ctype}_freq_power.png'
 
     xlabel = {
-        "pyr": "$STIM_{PYR}$",
-        "bic": "$STIM_{BiC}$",
-        "cck": "$STIM_{CCK}$",
-        "pv": "$STIM_{PV}$"
+        "pyr": "$STIM_{PYR}$ [au]",
+        "bic": "$STIM_{BiC}$ [au]",
+        "cck": "$STIM_{CCK}$ [au]",
+        "pv": "$STIM_{PV} [au]$"
     }
 
     # c1, c2 = ctype.split('_')
@@ -226,10 +226,10 @@ def plot_fig_5a(n, conn):
     save_name = f'fig_5_supp_w_{conn}.png'
 
     xlabel = {
-        "pv_pyr": "$w_{PV \\rightarrow PYR}$",
-        "pyr_pv": "$w_{PYR \\rightarrow PV}$",
-        "pv_cck": "$w_{PV \\rightarrow CCK}$",
-        "cck_pv": "$w_{CCK \\rightarrow PV}$",
+        "pv_pyr": "$w_{PV \\rightarrow PYR}$ [au]",
+        "pyr_pv": "$w_{PYR \\rightarrow PV}$ [au]",
+        "pv_cck": "$w_{PV \\rightarrow CCK}$ [au]",
+        "cck_pv": "$w_{CCK \\rightarrow PV}$ [au]",
 
     }
 
@@ -265,53 +265,54 @@ def plot_fig_5a(n, conn):
     xlim = [np.min(X - (X[2] - X[0])), np.max(X + (X[2] - X[0]))]
     ylim_theta_freq = [np.min(Y) - 1, np.max(Y) + 1]
     # ==============================================================================
-    fig, ax = plt.subplots(nrows=2, sharex=True, figsize=[9, 6.4], dpi=250)
+    fig, ax = plt.subplots(nrows=1, sharex=True, figsize=[12.8, 4.8], dpi=250)
     # First subplot --> theta frequency vs stim
-    p1, = ax[0].plot(weight, theta_freq,
+    p1, = ax.plot(weight, theta_freq,
                      ls='--', marker='.', color='black')  # plot theta freq
-    ax[0].plot(x_valid, theta_freq_valid,
+    ax.plot(x_valid, theta_freq_valid,
                ls="", marker=".", color="C3")
-    ax[0].plot(X, a0_tf + a1_tf * X,
+    ax.plot(X, a0_tf + a1_tf * X,
                ls="dotted", color="purple")
 
     # subplot 1 axes and labels
     # ax[0].set_title(f"Stimulation to {ctype} cell".upper())
     # ax[0].set_title(f"$w_{{{c1.upper()} \\rightarrow {c2.upper()}}}$")
-    ax[0].set_xlim(xlim)
-    ax[0].set_ylabel("Theta Frequency [Hz]")
+    ax.set_xlim(xlim)
+    ax.set_ylabel("Theta Frequency [Hz]")
 
-    ax[0].yaxis.label.set_color(p1.get_color())
+    ax.yaxis.label.set_color(p1.get_color())
+    ax.set_xlabel(xlabel[conn])
 
-    ax[0].tick_params(axis='y', colors=p1.get_color())
-    ax[0].grid(axis='x')
+    ax.tick_params(axis='y', colors=p1.get_color())
+    ax.grid(axis='x')
     # end of first subplot
     # ==============================================================================
 
     # ==============================================================================
     # second subplot --> log power ratio vs stim
-    ax1 = ax[1].twinx()
-    p1, = ax[1].plot(weight, theta,
-                     ls='--', marker='.', color='black')  # plot theta power
-    # ax[1].axhline(48, color='C0', ls='--')
-    # ax[1].plot(x_valid, theta_valid,
-    #            ls="", marker=".", color="C3")
-    p2, = ax1.plot(weight, gamma,
-                   ls='--', marker='.', color='grey')  # plot gamma power
-    # ax1.axhline(0.31, color='C1', ls='--')
-    # ax1.plot(x_valid, gamma_valid,
-    #            ls="", marker=".", color="C3")
-
-    # subplot 1 axes and labels
-    ax[1].set_ylabel("Theta Power")
-    ax1.set_ylabel("Gamma Power")
-    ax[1].set_xlabel(xlabel[conn])
-
-    ax[1].yaxis.label.set_color(p1.get_color())
-    ax1.yaxis.label.set_color(p2.get_color())
-
-    ax[1].tick_params(axis='y', colors=p1.get_color())
-    ax1.tick_params(axis='y', colors=p2.get_color())
-    ax[1].grid(axis='x')
+    # ax1 = ax[1].twinx()
+    # p1, = ax[1].plot(weight, theta,
+    #                  ls='--', marker='.', color='black')  # plot theta power
+    # # ax[1].axhline(48, color='C0', ls='--')
+    # # ax[1].plot(x_valid, theta_valid,
+    # #            ls="", marker=".", color="C3")
+    # p2, = ax1.plot(weight, gamma,
+    #                ls='--', marker='.', color='grey')  # plot gamma power
+    # # ax1.axhline(0.31, color='C1', ls='--')
+    # # ax1.plot(x_valid, gamma_valid,
+    # #            ls="", marker=".", color="C3")
+    #
+    # # subplot 1 axes and labels
+    # ax[1].set_ylabel("Theta Power")
+    # ax1.set_ylabel("Gamma Power")
+    # ax[1].set_xlabel(xlabel[conn])
+    #
+    # ax[1].yaxis.label.set_color(p1.get_color())
+    # ax1.yaxis.label.set_color(p2.get_color())
+    #
+    # ax[1].tick_params(axis='y', colors=p1.get_color())
+    # ax1.tick_params(axis='y', colors=p2.get_color())
+    # ax[1].grid(axis='x')
 
     # ax.grid()
     plt.tight_layout()
@@ -469,11 +470,11 @@ def plot_fig_100_a():
     t2 = [0.9321, 275.770506660552]
     t3 = [6.38, 11.1925443850396]
 
-    l1 = ax.plot(cck_pv[:, 0], cck_pv[:, 1], label='CCK-PV',
+    l1 = ax.plot(cck_pv[:, 0], cck_pv[:, 1], label='CCK+PV',
             color='black', fillstyle='full', **filled_marker_style)
-    l2 = ax.plot(pyr_pv[:, 0], pyr_pv[:, 1], label='PYR-PV',
+    l2 = ax.plot(pyr_pv[:, 0], pyr_pv[:, 1], label='PYR+PV',
             color='black', fillstyle='none', **filled_marker_style)
-    l3 = ax1.plot(pyr_bic[:, 0], pyr_bic[:, 1], label='PYR-BiC',
+    l3 = ax1.plot(pyr_bic[:, 0], pyr_bic[:, 1], label='PYR+BiC',
              color='darkgrey', marker='o', linestyle='--')
     ax.plot(*t1, color='C2', marker='^', markersize=15)
     ax.plot(*t2, color='C3', marker='^', markersize=15)
@@ -505,7 +506,7 @@ def plot_fig_100_b():
              "figure_100/panel_b_c_d/rPYR-rBiC/")
 
     tau = [5, 8, 10]
-    colors = ['xkcd:burnt orange', 'xkcd:orange', 'xkcd:apricot']
+    colors = ['xkcd:light grey', 'xkcd:grey', 'xkcd:dark grey']
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
@@ -516,8 +517,8 @@ def plot_fig_100_b():
 
     ax.set_xlim((0, 50))
     ax.set_ylim((0, 100))
-    ax.set_ylabel("$r_{BiC}$")
-    ax.set_xlabel("$r_{PYR}$")
+    ax.set_ylabel("$r_{BiC}$ [Hz]")
+    ax.set_xlabel("$r_{PYR}$ [Hz]")
 
     ax.legend(loc=2)
     plt.tight_layout()
@@ -529,7 +530,7 @@ def plot_fig_100_c():
              "figure_100/panel_b_c_d/r_PYR-r_PV/")
 
     tau = [2, 5, 8]
-    colors = ['xkcd:light blue', 'xkcd:cerulean', 'xkcd:cobalt']
+    colors = ['xkcd:light grey', 'xkcd:grey', 'xkcd:dark grey']
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
@@ -540,8 +541,8 @@ def plot_fig_100_c():
 
     ax.set_xlim((0, 40))
     ax.set_ylim((0, 60))
-    ax.set_ylabel("$r_{PV}$")
-    ax.set_xlabel("$r_{PYR}$")
+    ax.set_ylabel("$r_{PV}$ [Hz]")
+    ax.set_xlabel("$r_{PYR}$ [Hz]")
 
     ax.legend(loc=2)
     plt.tight_layout()
@@ -553,7 +554,7 @@ def plot_fig_100_d():
              "figure_100/panel_b_c_d/r_CCK-r_PV/")
 
     tau = [2, 5, 8]
-    colors = ['xkcd:indigo', 'xkcd:blue', 'xkcd:lavender']
+    colors = ['xkcd:light grey', 'xkcd:grey', 'xkcd:dark grey']
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
@@ -564,12 +565,69 @@ def plot_fig_100_d():
 
     ax.set_xlim((0, 20))
     ax.set_ylim((0, 15))
-    ax.set_ylabel("$r_{PV}$")
-    ax.set_xlabel("$r_{CCK}$")
+    ax.set_ylabel("$r_{PV}$ [Hz]")
+    ax.set_xlabel("$r_{CCK}$ [Hz]")
 
     ax.legend(loc=2)
     plt.tight_layout()
     plt.savefig("/home/spandans/skinner_lab_master/prm/figures/new_figs/fig100_d.pdf")
+
+def plot_supp_fig_7(conn_set=8, ctype='pyr'):
+    with open("search_results/search_results_conn_10.json", "r") as f:
+        conn_data = json.load(f)
+
+    stim_range = {
+        "pyr": [-0.033, 0.00, 0.033, 0.067],
+        "cck": [-0.133, 0.0, 0.133, 0.233]
+    }
+
+    stim = {'pyr': np.zeros_like(time),
+            'bic': np.zeros_like(time),
+            'pv': np.zeros_like(time),
+            'cck': np.zeros_like(time)
+            }
+    test_prm = PRM_v2(conn_data[conn_set])
+    pst = 7 * len(time)//8
+
+    fig, ax = plt.subplots(2, 4, figsize=(16, 9))
+
+    for idx, stim_val in enumerate(stim_range[ctype]):
+        stim[ctype] = stim_val + np.zeros_like(time)
+
+        test_prm.set_init_state(len(time))
+        test_prm = simulate(time, test_prm, stim=stim)
+        psd_out = find_psd(test_prm.R, fs)[:2]
+
+        ax[0][idx].plot(time[pst:], test_prm.R["pyr"][pst:])
+        ax[1][idx].plot(psd_out[0], psd_out[1])
+
+        ax[0][idx].set_title("$STIM_{CCK}=$"+str(stim_val))
+        ax[1][idx].set_xlim(0, 60)
+
+        ax[0][idx].set_xlabel("Time [s]")
+        ax[1][idx].set_xlabel("Frequency [Hz]")
+
+    ax[0][0].set_ylabel("$PYR$ Activity [Hz]")
+    ax[1][0].set_ylabel("Power Spectral Density")
+
+    fig.tight_layout()
+    plt.savefig(f"figures/new_figs/supp_fig_7_{ctype}.pdf", dpi=400)
+
+def plot_supp_fig_7b(conn_set="10_22"):
+    conn_dataset, p_set = conn_set.split('_')
+    with open(f"/home/spandans/skinner_lab_master/prm/search_results/search_results_conn_{conn_dataset}.json",
+              "r") as f:
+        conn_data = json.load(f)
+
+    conns = conn_data[int(p_set)]
+
+    P = PRM_v2(conns)
+    P.set_init_state(len(time))
+    P = simulate(time, P)
+
+    plot_trace(time, P.R, P.labels, 'all')
+    plt.xlim([7, 7.2])
+    plt.savefig(f"figures/new_figs/supp_fig_7b_3.pdf", dpi=400)
 
 
 # plot_fig_100_a()
@@ -577,11 +635,13 @@ def plot_fig_100_d():
 # plot_fig_100_c()
 # plot_fig_100_d()
 # plot_fig_2()
-# plot_fig_3()
+# plot_fig_3(conn_set=13)
 # plot_fig_4()
-# plot_fig_5(8, "bic")
-plot_fig_5a(8, "pyr_pv")
+# plot_fig_5(8, "pyr")
+# plot_fig_5a(8, "pv_pyr")
 # plot_fig_6()
 # plot_fig_7()
+# plot_supp_fig_7(ctype='cck')
+plot_supp_fig_7b()
 
 plt.show()
