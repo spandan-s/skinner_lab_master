@@ -1,6 +1,8 @@
 import numpy as np
 
 from prm_v2 import *
+plt.style.use("seaborn-v0_8-poster")
+plt.rcParams.update({"font.size": 20})
 
 
 # def baseline_sim(P):
@@ -29,23 +31,23 @@ def silence_CCK_start(P):
 
 
 def silence_CCK_mid(P,
-                    stim_start=5.0):
+                    stim_start=4.0, stim_cck=-1):
     # silence CCK mid simulation
-    new_time = np.arange(0, 10, dt)
+    time = np.arange(0, 8, dt)
     stim = {
-        'pyr': np.zeros_like(new_time),
-        'bic': np.zeros_like(new_time),
-        'cck': np.zeros_like(new_time),
-        'pv': np.zeros_like(new_time)
+        'pyr': np.zeros_like(time),
+        'bic': np.zeros_like(time),
+        'cck': np.zeros_like(time),
+        'pv': np.zeros_like(time)
     }
     # stim_start = 4.0
-    stim['cck'][int(stim_start * fs):] = -1
+    stim['cck'][int(stim_start * fs):] = stim_cck
 
-    P.set_init_state(len(new_time))
-    P = simulate(new_time, P, stim=stim)
+    P.set_init_state(len(time))
+    P = simulate(time, P, stim=stim)
     ret = P.R
 
-    return new_time, ret
+    return time, ret
 
 
 def stim_CCK_mid(P,
@@ -61,37 +63,54 @@ def stim_CCK_mid(P,
     # stim_start = 4.0
     # stim_stop = 4.25
     stim['cck'][int(stim_start * fs):int(stim_stop * fs)] = stim_cck
-    # stim['cck'][int(stim_stop * fs):] = 0
+    stim['cck'][int(stim_stop * fs):] = 0
 
     P.set_init_state(len(time))
     P = simulate(time, P, stim=stim)
     ret = P.R
 
-    return ret
+    return time, ret
 
 
-def silence_plot(P):
-    R1 = baseline_sim(P)
-    R2 = silence_CCK_start(P)
-    R3 = silence_CCK_mid(P)
-    R4 = stim_CCK_mid(P, stim_cck=0.5)
+def silence_plot(n):
+    labels = ["PYR", "BiC", "CCK", "PV"]
+
+    P = import_conns(n)
+    # R1 = baseline_sim(P)
+    # R2 = silence_CCK_start(P)
+    t3, R3 = silence_CCK_mid(P)
+    t4, R4 = stim_CCK_mid(P, stim_cck=0.5)
+    t5, R5 = silence_CCK_mid(P, stim_cck=20)
 
     # plot the three activities
-    fig, ax = plt.subplots(4, 1, sharex=True, sharey=True, figsize=[14, 10])
+    fig, ax = plt.subplots(3, 1, sharex=True, sharey=True, figsize=[14, 10])
 
-    for idx, Rx in enumerate([R1, R2, R3, R4]):
+    # for idx, Rx in enumerate([R1, R2, R3, R4]):
+    for idx, Rx in enumerate([R3, R4, R5]):
         for ctype in ['pyr', 'bic', 'cck', 'pv']:
-            ax[idx].plot(time, Rx[ctype])
+            ax[idx].plot(time, Rx[ctype], label=P.labels[ctype])
         ax[idx].set_ylabel('Activity [Hz]')
+        # ax[idx].legend(loc=1)
 
-    plt.xlim((3.5, 5.5))
+    ax[0].axvline(4.0, color='black', linestyle='--')
+    ax[1].axvline(4.0, color='black', linestyle='--')
+    ax[2].axvline(4.0, color='black', linestyle='--')
+    ax[1].axvline(4.25, color='black', linestyle='--')
+
+
+    plt.xlim((3.75, 4.5))
     plt.xlabel('Time [s]')
-    plt.savefig(f"figures/silence_cck/silenced_t425/silence_CCK_10_0.pdf")
+    plt.savefig(f"figures/silence_cck/fig_7/silence_CCK_10_{n}_v3_1.pdf")
 
 
-# silence_plot(import_conns(0))
-t, R = silence_CCK_mid(import_conns(135))
-save_signal("signals/silence_CCK_10_135.dat", time=t, R=R)
+silence_plot(22)
+# for idx, c_set in enumerate([0, 2, 3, 7, 8, 22, 38, 50, 103, 135]):
+#     t, R = stim_CCK_mid(import_conns(c_set))
+#     save_signal(f"signals/stim_CCK_10_{c_set}_v2.dat", time=t, R=R)
+#     print(f"Completed for Set 10-{c_set}")
+
+# t, R = silence_CCK_mid(import_conns(38))
+# save_signal("signals/silence_CCK_10_38.dat", time=t, R=R)
 
 # IC = [0, 20, 20, 0]
 # R = silence_CCK_start(import_conns(7))

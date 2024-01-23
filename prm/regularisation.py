@@ -21,8 +21,16 @@ def spike_timing(DATA):
         spike_stats = {}
         for idx, ctype in enumerate(['pyr', 'bic', 'cck', 'pv']):
             if len(isi[ctype]) == 0:
-                isi_stats[ctype] = 'NaN'
-                spike_stats[ctype] = 'NaN'
+                isi_stats[ctype] = {
+                    'mean': np.nan,
+                    'median': np.nan,
+                    'std': np.nan
+                }
+                spike_stats[ctype] = {
+                    'mean': np.nan,
+                    'median': np.nan,
+                    'std': np.nan
+                }
             else:
                 isi_stats[ctype] = {
                     'mean': np.mean(isi[ctype]),
@@ -41,7 +49,7 @@ def spike_timing(DATA):
     return isi_stats, spike_stats
 
 
-DATA = np.loadtxt("signals/silence_CCK_10_0.dat",
+DATA = np.loadtxt("signals/silence_CCK_10_38.dat",
                   skiprows=1)
 
 time = DATA[:, 0]
@@ -71,11 +79,11 @@ stats2 = spike_timing(DATA_2)
 
 for ctype in ['pyr', 'bic']:
     print(ctype.upper())
-    print("mean amp", stats1[1][ctype]['mean'].round(3), stats2[1][ctype]['mean'].round(3))
-    print("median amp", stats1[1][ctype]['median'].round(3), stats2[1][ctype]['median'].round(3))
-    print("std amp", stats1[1][ctype]['std'].round(3), stats2[1][ctype]['std'].round(3))
-    print("mean isi", stats1[0][ctype]['mean'].round(3), stats2[0][ctype]['mean'].round(3))
-    print("median isi", stats1[0][ctype]['median'].round(3), stats2[0][ctype]['median'].round(3))
-    print("std isi", stats1[0][ctype]['std'].round(3), stats2[0][ctype]['std'].round(3))
+    print("mean amp", np.round(stats1[1][ctype]['mean'], 3), np.round(stats2[1][ctype]['mean'], 3))
+    print("median amp", np.round(stats1[1][ctype]['median'], 3), np.round(stats2[1][ctype]['median'], 3))
+    print("std amp", np.round(stats1[1][ctype]['std'], 3), np.round(stats2[1][ctype]['std'], 3))
+    print("mean isi", np.round(stats1[0][ctype]['mean'], 3), np.round(stats2[0][ctype]['mean'], 3))
+    print("median isi", np.round(stats1[0][ctype]['median'], 3), np.round(stats2[0][ctype]['median'], 3))
+    print("std isi", np.round(stats1[0][ctype]['std'], 3), np.round(stats2[0][ctype]['std'], 3))
 
 plt.show()

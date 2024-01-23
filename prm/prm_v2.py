@@ -654,7 +654,7 @@ def spike_raster(R):
         'pyr': 10,
         'pv': 8,
         'bic': 10,
-        'cck': 4
+        'cck': 2
     }
 
     for ctype in ['pyr', 'bic', 'cck', 'pv']:
@@ -681,14 +681,17 @@ time = np.arange(0, T, dt)
 # h = 0
 # r_o = 30
 # ===============================================================
-# R = baseline_sim(import_conns(0))
+# R = baseline_sim(import_conns(103))
 # peaks = spike_raster(R)
 #
-# # plt.plot(time, R['pyr'])
-# plt.plot(time[peaks['pyr']], 10*np.ones_like([peaks['pyr']][0]), 'x')
-# plt.plot(time[peaks['bic']], 10*np.ones_like([peaks['bic']][0]), 'x')
-# plt.plot(time[peaks['cck']], 10*np.ones_like([peaks['cck']][0]), 'x')
+# for ctype in ['cck', 'pv']:
+#     plt.plot(time, R[ctype])
+# # plt.plot(time[peaks['pyr']], 10*np.ones_like([peaks['pyr']][0]), 'x')
+# # plt.plot(time[peaks['bic']], 10*np.ones_like([peaks['bic']][0]), 'x')
+# # plt.plot(time[peaks['cck']], 10*np.ones_like([peaks['cck']][0]), 'x')
 # # plt.plot(time[peaks['pv']], 40*np.ones_like([peaks['pv']][0]), 'x')
-#
-#
+# for ctype in ['cck', 'pv']:
+#     plt.plot(time[peaks[ctype]], R[ctype][peaks[ctype]], 'bx')
+
+
 # plt.show()
