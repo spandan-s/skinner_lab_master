@@ -94,8 +94,8 @@ def extract_data(entry):
 
 df = pd.DataFrame(columns=df_cols)
 
-cage_dir = "cage F #19 right 2 cuts"
-rec_type = ["pre-kindle", 'post 100 stim']
+cage_dir = "Cage C #7 right cut"
+rec_type = ['post 100 stim']
 
 for rt in rec_type:
     files = sorted(file for file in os.listdir(f"srs_analysis_results/{cage_dir}/{rt}") if file.endswith('.txt'))

@@ -1,7 +1,7 @@
 import numpy as np
 
 from prm_v2 import *
-plt.style.use("seaborn-v0_8-poster")
+plt.style.use("seaborn-poster")
 plt.rcParams.update({"font.size": 20})
 
 
@@ -103,22 +103,23 @@ def silence_plot(n):
     plt.savefig(f"figures/silence_cck/fig_7/silence_CCK_10_{n}_v3_1.pdf")
 
 
-silence_plot(22)
+# silence_plot(22)
 # for idx, c_set in enumerate([0, 2, 3, 7, 8, 22, 38, 50, 103, 135]):
 #     t, R = stim_CCK_mid(import_conns(c_set))
 #     save_signal(f"signals/stim_CCK_10_{c_set}_v2.dat", time=t, R=R)
 #     print(f"Completed for Set 10-{c_set}")
 
-# t, R = silence_CCK_mid(import_conns(38))
+t, R = silence_CCK_mid(import_conns(135), stim_cck=20)
 # save_signal("signals/silence_CCK_10_38.dat", time=t, R=R)
 
 # IC = [0, 20, 20, 0]
 # R = silence_CCK_start(import_conns(7))
 # R = baseline_sim(import_conns(38), IC)
 #
-# for ctype in ['pyr', 'bic', 'cck', 'pv']:
-#     print(R[ctype][0])
-#     plt.plot(time, R[ctype])
+for ctype in ['pyr', 'bic', 'cck', 'pv']:
+    plt.plot(time, R[ctype])
+plt.xlim(3.75, 4.5)
+plt.axvline(4.0, color='black', linestyle='--')
 #
 # plt.xlim(0, 2)
 

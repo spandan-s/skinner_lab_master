@@ -285,11 +285,16 @@ def run_prm(conns=None, I=None, dt=0.001, T=8.0,
 
     return [tf, tpp], [gf, gpp]
 
-def import_conns(n=0):
+def import_conns(n=0, device='loquat'):
     # import conns
-    with open(f"/home/spandans/Documents/Skinner_Lab/skinner_lab_master/prm/search_results/search_results_conn_10.json",
-              "r") as f:
-        conn_data = json.load(f)
+    if device == 'loquat':
+        with open(f"/home/spandans/skinner_lab_master/prm/search_results/search_results_conn_10.json",
+                  "r") as f:
+            conn_data = json.load(f)
+    elif device == 'lombardi':
+        with open(f"/home/spandans/Documents/Skinner_Lab/skinner_lab_master/prm/search_results/search_results_conn_10.json",
+                  "r") as f:
+            conn_data = json.load(f)
 
     # create PRM
     P = PRM_v2(conns_dict=conn_data[n])
@@ -664,7 +669,7 @@ def spike_raster(R):
 
 def save_signal(fname, time, R):
     DATA = np.column_stack((time, *R.values()))
-    header = "t\tR_PYR\tR_BiC\tR_CCK\tR_PV"
+    header = "t\tR_PYR\tR_BiC\tR_PV\tR_CCK"
 
     np.savetxt(fname, DATA, header=header)
 

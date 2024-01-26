@@ -119,7 +119,7 @@ def run_gen_alg(f_v, n_0=2, max_iter=20):
 
 def validity_criteria(x):
     x_h = list_to_conns(x)
-    return hypothesis_test(x_h)
+    return hypothesis_test(x_h, cck_threshold=8)
 
 
 def in_Array(array_to_check, array_list):
@@ -127,20 +127,20 @@ def in_Array(array_to_check, array_list):
 
 
 def gen_possible_conns() -> object:
-    # A = {
-    #     "pyr": {
-    #         "pyr": 0.05, "bic": 0.04, "pv": 0.02, "cck": 0.0
-    #     },
-    #     "bic": {
-    #         "pyr": -0.02, "bic": 0.0, "pv": 0.0, "cck": 0.0
-    #     },
-    #     "pv": {
-    #         "pyr": -0.03, "bic": 0.0, "pv": -0.055, "cck": -0.075
-    #     },
-    #     "cck": {
-    #         "pyr": -0.05, "bic": 0.0, "pv": -0.15, "cck": -0.15
-    #     },
-    # }
+    A = {
+        "pyr": {
+            "pyr": 0.05, "bic": 0.04, "pv": 0.02, "cck": 0.0
+        },
+        "bic": {
+            "pyr": -0.02, "bic": 0.0, "pv": 0.0, "cck": 0.0
+        },
+        "pv": {
+            "pyr": -0.03, "bic": 0.0, "pv": -0.055, "cck": -0.075
+        },
+        "cck": {
+            "pyr": -0.05, "bic": 0.0, "pv": -0.15, "cck": -0.15
+        },
+    }
     CR = {
         "pyr": {
             "pyr": [0.1, 0.2], "bic": [0.1, 0.2], "pv": [0.01, 0.06], "cck": [0.0, 0.0]
@@ -177,27 +177,27 @@ def gen_possible_conns() -> object:
     return conns_to_list(new_conns), new_i
 
 
-# V = run_gen_alg(validity_criteria, max_iter=200, n_0=20)
-# for item in V:
-#     print(item)
+V = run_gen_alg(validity_criteria, max_iter=200, n_0=20)
+for item in V:
+    print(item)
 
 # a1 = np.random.randint(0, 2, size=16)
 # a2 = np.random.randint(0, 2, size=16)
 #
 # c = mutate(crossover(a1, a2))
 # print(c)
+#
+# I = {
+#     "pyr": 0.9,
+#     "bic": -1.25,
+#     "pv": 0.7,
+#     "cck": 0.8,
+# }
 
-I = {
-    "pyr": 0.9,
-    "bic": -1.25,
-    "pv": 0.7,
-    "cck": 0.8,
-}
 
-
-conns, i = gen_possible_conns()
-ic(list_to_conns(conns), i)
-
-ic(hypothesis_test(list_to_conns(conns), i, plot=True))
+# conns, i = gen_possible_conns()
+# ic(list_to_conns(conns), i)
+#
+# ic(hypothesis_test(list_to_conns(conns), i, plot=True))
 
 plt.show()

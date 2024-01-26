@@ -8,7 +8,7 @@ from prm_htest import hypothesis_test
 
 rng = np.random.default_rng()
 
-def gen_search(ref_conns, ref_is, max_iter=100):
+def gen_search(ref_conns, ref_is, max_iter=300):
     valid_conns = []
     valid_is = []
     # start at a given point in the parameter space (let: reference parameter)
@@ -30,14 +30,14 @@ def gen_search(ref_conns, ref_is, max_iter=100):
             #   initialise PRM with new conns
             #   run simulation and do spectral analysis
             #   perform hypothesis test
-            conn_validity = hypothesis_test(new_conn, new_i)
+            conn_validity = hypothesis_test(new_conn, new_i, cck_threshold=10)
             #       if true: add to set of valid conns
             if conn_validity:
                 if (new_conn not in valid_conns):
                 # if (new_conn not in valid_conns) and (new_i not in valid_is):
                     valid_conns.append(new_conn)
                     valid_is.append(new_i)
-                    with open("search_results/search_results_conn_10.json", "w") as w:
+                    with open("search_results/search_results_conn_13.json", "w") as w:
                         json.dump(valid_conns, w)
                     # with open("search_results/search_results_i_4.json", "w") as w:
                     #     json.dump(valid_is, w)

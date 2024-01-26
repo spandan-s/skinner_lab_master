@@ -42,11 +42,12 @@ for ctype in ['pyr', 'bic', 'cck', 'pv']:
     plt.plot(stim_arr, activity[ctype], label = new_prm.labels[ctype])
 
 plt.legend()
-plt.xlabel('STIM')
-plt.ylabel('Activity')
+plt.xlabel('STIM [au]'
+           '')
+plt.ylabel('Activity [Hz]')
 plt.grid()
 plt.tight_layout()
 
-plt.savefig('intrinsic.png', dpi=400)
+plt.savefig('figures/new_figs/intrinsic.pdf', dpi=400)
 
 plt.show()
