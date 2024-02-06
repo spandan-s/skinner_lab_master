@@ -1,17 +1,22 @@
+import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pyabf
 import os
 from f_filter_lfp import filter_lfp, notch_filt
-from scipy.signal import decimate, find_peaks, periodogram
+from scipy.signal import decimate, find_peaks, periodogram, get_window, welch
 
 
-def pre_filter(Y, fs, cutoff=[0.5, 100], w0=60):
+def pre_filter(Y, fs, cutoff=[0.5, 100], w0=[]):
     """
     filter the signal to remove any components below a low and high cutoff
     as well as remove 60 Hz DC component
     """
     y_filt_60Hz = notch_filt(Y, fs, 60, Q=50)
+    for ws in w0:
+        y_filt_60Hz = notch_filt(y_filt_60Hz, fs, ws, Q=20)
+
     y_filt = filter_lfp(y_filt_60Hz, fs, cutoff)
 
     return y_filt
@@ -71,8 +76,8 @@ def cut_signal(X, Y, fs):
     cut_pts = np.append(cut_pts, len(X) - 1)
     # print(X[cut_pts])
     num_sections = len(cut_pts)
-    min_length = fs * 5
-    max_length = fs * 30
+    min_length = fs * 10
+    max_length = fs * 60
     cut_signals_X, cut_signals_Y = [], []
 
     start, stop = 0, cut_pts[0]
@@ -124,17 +129,27 @@ def count_spikes(X, Y):
         return False
 
 def plot_periodograms(X, Y, fs):
-    delta_range = [0.5, 5]
-    theta_range = [2, 15]
+    delta_range = [0.5, 3]
+    theta_range = [3, 15]
     gamma_range = [15, 100]
 
     Y_filt_delta = filter_lfp(Y, fs, delta_range)
     Y_filt_theta = filter_lfp(Y, fs, theta_range)
     Y_filt_gamma = filter_lfp(Y, fs, gamma_range)
 
-    fxx_delta, pxx_delta = periodogram(Y_filt_delta, fs)
-    fxx_theta, pxx_theta = periodogram(Y_filt_theta, fs)
-    fxx_gamma, pxx_gamma = periodogram(Y_filt_gamma, fs)
+    segment = int(fs * 10)
+    myhann = get_window('hann', segment)
+
+    myparams = dict(fs=fs, nperseg=segment, window=myhann,
+                    noverlap=segment / 4, scaling='density', return_onesided=True)
+
+    # fxx_delta, pxx_delta = periodogram(Y_filt_delta, fs)
+    # fxx_theta, pxx_theta = periodogram(Y_filt_theta, fs)
+    # fxx_gamma, pxx_gamma = periodogram(Y_filt_gamma, fs)
+
+    fxx_delta, pxx_delta = welch(Y_filt_delta, **myparams)
+    fxx_theta, pxx_theta = welch(Y_filt_theta, **myparams)
+    fxx_gamma, pxx_gamma = welch(Y_filt_gamma, **myparams)
 
     peak_delta = [fxx_delta[np.argmax(pxx_delta)], np.max(pxx_delta)]
     peak_theta = [fxx_theta[np.argmax(pxx_theta)], np.max(pxx_theta)]
@@ -177,13 +192,21 @@ def check_validity(X, Y, fs):
 # MAIN PROGRAM
 
 # load abf file and X and Y data
-dir = '/home/spandans/Documents/NFRF_testdata_Aylin_Liang/Oct_4_2022_Gg_37/'
-os.chdir(dir)
+dir = '/media/spandans/Transcend/Liang_TBI_09_11_23/REID DATA/'
+# os.chdir(dir)
 
-fn = '221004_5901cko_0001'
+id = "20230330 ID2B33 TBI/"
+fn = '230330_0000'
 
 # load signal from abf file
-abf = pyabf.ABF(f'{dir}{fn}.abf')
+abf = pyabf.ABF(f'{dir}{id}{fn}.abf')
+
+try:
+    os.makedirs(f"./TBI_analysis_results/{id}/")
+except FileExistsError:
+    pass
+
+sys.stdout = open(f'./TBI_analysis_results/{id}{fn}.txt')
 
 print('==================================================')
 print(f'Processing signal from file: {fn}')
@@ -196,7 +219,8 @@ plt.plot(sweepX, sweepY)
 
 fs = abf.sampleRate
 
-Y_filt = pre_filter(sweepY, fs)
+Y_filt = pre_filter(sweepY, fs, w0=[40, 80])
+# plot_periodograms(sweepX[int(300*fs):int(500*fs)], Y_filt[int(300*fs):int(500*fs)], fs=fs)
 
 # cut signal into "valid" chunks
 cut_signal_X, cut_signal_Y = cut_signal(sweepX, Y_filt, fs)
@@ -214,5 +238,6 @@ for idx in range(num_signals):
     print(f'Signal validity: {validity}')
     print('==================================================\n')
 
-plt.show()
-# plt.close()
+# plt.show()
+plt.close()
+sys.stdout.close()

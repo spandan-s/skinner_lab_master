@@ -39,11 +39,11 @@ filt_DATA_SRS = ictal_timing(filt_DATA_SRS)
 
 filt_DATA_SRS = filt_DATA_SRS.loc[(filt_DATA_SRS['time_to_SRS'] < 0) | (filt_DATA_SRS['time_to_SRS'] > 2)]
 
-with open("./srs_analysis_results/duration.txt", 'w') as f:
-    f.write("BASELINE\n")
-    f.write(str(filt_DATA_baseline['duration'].describe()))
-    f.write("\nSRS\n")
-    f.write(str(filt_DATA_SRS['duration'].describe()))
+# with open("./srs_analysis_results/duration.txt", 'w') as f:
+#     f.write("BASELINE\n")
+#     f.write(str(filt_DATA_baseline['duration'].describe()))
+#     f.write("\nSRS\n")
+#     f.write(str(filt_DATA_SRS['duration'].describe()))
 
 print(filt_DATA_baseline['peak_1_amp'].describe())
 print(filt_DATA_SRS['peak_1_amp'].describe())
@@ -57,8 +57,8 @@ print(filt_DATA_SRS['peak_1_amp'].describe())
 # filt_DATA['rec_type'] = ['baseline' if filt_DATA['rec_type'] == 'pre-kindle' else 'SRS']
 
 # ========================= FREQUENCY ===============================================
-# sns.histplot(data=filt_DATA_baseline, x='peak_1_freq', kde=True, stat='proportion')
-# sns.histplot(data=filt_DATA_SRS, x='peak_1_freq', kde=True, stat='proportion')
+sns.histplot(data=filt_DATA_baseline, x='peak_1_freq', kde=True, stat='proportion', binwidth=1)
+sns.histplot(data=filt_DATA_SRS, x='peak_1_freq', kde=True, stat='proportion', binwidth=1)
 # plt.savefig("./srs_analysis_results/figures/peak_1_freq.png")
 
 # ================= DURATION ================================================
