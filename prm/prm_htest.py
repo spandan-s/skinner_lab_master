@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-def hypothesis_test(in_conns="default", in_I="default", plot=False):
+def hypothesis_test(in_conns="default", in_I="default", cck_threshold = 4, plot=False):
     # # ===============================================================
     # new_prm = PRM_v2()
     #
@@ -47,12 +47,12 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                               label=test_prm.labels[ctype])
             ax["master"].legend(loc=1)
         # ax["master"].set_xlabel("Time")
-        ax["master"].set_ylabel("Activity [au]")
+        ax["master"].set_ylabel("Activity [Hz]")
 
         ax["top"].plot(time[7 * len(time)//8:], test_prm.R["pyr"][7 * len(time)//8:])
         # ax["top"].set_title("$PYR$ Cell Activity")
         ax["top"].set_xlabel("Time [s]")
-        ax["top"].set_ylabel("$PYR$ Activity [au]")
+        ax["top"].set_ylabel("$PYR$ Activity [Hz]")
 
     # Check if it satisfies primary hypothesis
     #   Has theta power >= 50% of default parameter set (DPS)
@@ -64,7 +64,7 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
     pbr = pv_bic_ratio(test_prm.R)
     max_cck = np.max(test_prm.R["cck"][int(fs):])
     if (pH0[0] >= (0.6 * dps_tpp)) and (pH0[1] >= (0.6 * dps_gpp)):
-        if (pbr >= 0.67) and (max_cck >= 4.2):
+        if (pbr >= 0.67) and (max_cck >= cck_threshold):
             h_test[0] = True
         else:
             # print("Failed 67% PV-BiC ratio threshold")
@@ -85,10 +85,10 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
             ax["midL"].set_xticklabels([])
             # ax["midL"].set_title("Removed $PYR \\rightarrow PYR$ connections")
             # ax["midL"].set_xlabel("Time")
-            ax["midL"].set_ylabel("Activity [au]")
+            ax["midL"].set_ylabel("Activity [Hz]")
 
         pH1 = find_pyr_power(test_prm.R, fs, "theta")[1]
-        if pH1 <= 0.15 * dps_tpp:
+        if pH1 <= 0.1 * dps_tpp:
             h_test[1] = True
 
             # Check if it satisfies secondary hypothesis #2 (removal of CCK->PV connections)
@@ -107,10 +107,10 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                 ax["midR"].set_xticklabels([])
                 # ax["midR"].set_title("Removed $CCK \\rightarrow PV$ connections")
                 # ax["midR"].set_xlabel("Time")
-                ax["midR"].set_ylabel("Activity [au]")
+                ax["midR"].set_ylabel("Activity [Hz]")
 
             pH2 = find_pyr_power(test_prm.R, fs, "theta")[1]
-            if pH2 <= 0.15 * dps_tpp:
+            if pH2 <= 0.1 * dps_tpp:
                 h_test[2] = True
 
                 # Check if it satisfies secondary hypothesis #3 (removal of PV->PYR connections)
@@ -128,10 +128,10 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                         # ax["botL"].legend()
                     # ax["botL"].set_title("Removed $PV \\rightarrow PYR$ connections")
                     ax["botL"].set_xlabel("Time [s]")
-                    ax["botL"].set_ylabel("Activity [au]")
+                    ax["botL"].set_ylabel("Activity [Hz]")
 
                 pH3 = find_pyr_power(test_prm.R, fs, "theta")[1]
-                if pH3 <= 0.15 * dps_tpp:
+                if pH3 <= 0.1 * dps_tpp:
                     h_test[3] = True
 
                     # Check if it satisfies secondary hypothesis #4 (removal of BiC->PYR connections)
@@ -149,10 +149,10 @@ def hypothesis_test(in_conns="default", in_I="default", plot=False):
                             # ax["botR"].legend()
                         # ax["botR"].set_title("Removed $BiC \\rightarrow PYR$ connections")
                         ax["botR"].set_xlabel("Time [s]")
-                        ax["botR"].set_ylabel("Activity [au]")
+                        ax["botR"].set_ylabel("Activity [Hz]")
 
                     pH4 = find_pyr_power(test_prm.R, fs, "theta")[1]
-                    if pH4 <= 0.15 * dps_tpp:
+                    if pH4 <= 0.1 * dps_tpp:
                         h_test[4] = True
                     else:
                         # print("Failed secondary hypothesis #4 (removal of BiC->PYR connections)")

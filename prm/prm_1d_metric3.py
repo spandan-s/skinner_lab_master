@@ -574,7 +574,7 @@ def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
                     LPR_valid[idx] = np.nan
                 else:
                     LPR_valid[idx] = LPR[idx]
-    save_arr = np.vstack([x_vec, theta_freq, theta, gamma, LPR]).T
+    save_arr = np.vstack([p_vec, theta_freq, theta, gamma, LPR]).T
     # ==============================================================================
     # First subplot --> theta frequency vs stim
     p1, = ax[0].plot(x_vec, theta_freq,
@@ -602,7 +602,7 @@ def plot_conn_v_theta_freq(conn1, conn2, n_pts=41,
                    ls='', marker='.', color='C3')
 
     # subplot 2 axes and labels
-    ax[1].set_xlabel("%$\Delta$ Parameter")
+    ax[1].set_xlabel("Synaptic Weight")
     ax[1].set_ylabel("Log Power Ratio")
     ax[1].grid(axis='x')
 
@@ -943,7 +943,7 @@ max_inputs = len(c_list)
 
 n = 8
 new_conns = conn_data[n]
-plot_conn_v_theta_freq("pv", "cck", n_pts=121,
+plot_conn_v_theta_freq("pyr", "pv", n_pts=121,
                        sdir=f"conn_10/conn_10_{n}/10_{n}_conn_v_power")
 #
 # plot_conn_v_theta_freq("pv", "pyr", num_pts, conns=new_conns,

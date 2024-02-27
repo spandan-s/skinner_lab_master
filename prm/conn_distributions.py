@@ -1,12 +1,15 @@
 import json
+import random
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from prm_v2 import *
 
 
 def conn_stats(conn_vector, label=None, Plot=False):
     conn_mean = np.mean(conn_vector)
+    conn_median = np.median(conn_vector)
     conn_std = np.std(conn_vector)
 
     conn_hist = np.histogram(conn_vector, bins=6)
@@ -15,7 +18,7 @@ def conn_stats(conn_vector, label=None, Plot=False):
         plt.stairs(*conn_hist, fill=True)
         plt.title(label)
 
-    return conn_mean, conn_std, conn_hist
+    return conn_mean, conn_median, conn_std, conn_hist
 
 
 def create_conn_vector(conns):
@@ -33,8 +36,10 @@ def create_conn_vector(conns):
 # with open("search_results/search_results_conn_7.json", "r") as f:
 #     conn_data_2 = json.load(f)
 
-with open("search_results/search_results_conn_8.json", "r") as f:
-    conn_data = json.load(f)
+with open("search_results/search_results_conn_13.json", "r") as f:
+    conn_data_full: object = json.load(f)
+
+conn_data = random.sample(conn_data_full, 200)
 
 # conn_data = conn_data_1 + conn_data_2[1:]
 
@@ -78,21 +83,22 @@ for idx in range(num_conns):
 
 # conn_stats(c_array[:, 0], conn_labels[0], True)
 
-c_stats = np.zeros((len(conn_labels), 2))
+c_stats = np.zeros((len(conn_labels), 3))
 
 for idx in range(len(c0)):
     # plt.figure()
     c_stats[idx] = conn_stats(c_array[:, idx], conn_labels[idx])[:-1]
 
 for idx, [label, stats] in enumerate(zip(conn_labels, c_stats)):
-    print(f"{label} Mean: {stats[0].round(3)}, SD: {stats[1].round(3)}")
+    print(f"{label} Mean: {stats[0].round(3)}, Median: {stats[1].round(3)}, SD: {stats[2].round(3)}")
 
 fig, ax = plt.subplots(figsize=[16, 9])
 bp = ax.boxplot(c_array)
 
 for idx, stats in enumerate(c_stats):
-    plt.text(idx+1, 0.1, f"Mean: {stats[0].round(3)}\nSD: {stats[1].round(3)}")
+    plt.text(idx+1, 0.1, f"Mean: {stats[0].round(3)}\nMedian: {stats[1].round(3)}\nSD: {stats[2].round(3)}")
 
 ax.set_xticklabels(conn_labels)
 
+plt.tight_layout()
 plt.show()
